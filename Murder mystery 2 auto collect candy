@@ -82,8 +82,8 @@ CreateButton("Toggle Auto Shoot", function()
             shootButton.MouseButton1Click:Connect(function()
                 local player = game.Players.LocalPlayer
                 if player.Character then
-                    -- Code to automatically shoot at the murderer goes here
-                    local murderer = nil -- Find the murderer here
+                    -- Automatically shoot at the murderer
+                    local murderer = nil
                     for _, p in pairs(game.Players:GetPlayers()) do
                         if p.Team == game.Teams.Murderers then
                             murderer = p
@@ -91,8 +91,9 @@ CreateButton("Toggle Auto Shoot", function()
                         end
                     end
                     if murderer then
-                        -- Insert shooting logic here
+                        -- Replace this with the actual shooting method
                         print("Shooting at murderer!")
+                        -- Add shooting logic here
                     end
                 end
             end)
@@ -109,8 +110,14 @@ end, MainFrame, UDim2.new(0.05, 0, 0.3, 0))
 local function ESPPlayers()
     for _, player in pairs(game.Players:GetPlayers()) do
         if player ~= game.Players.LocalPlayer then
+            if not player.Character then
+                player.CharacterAdded:Wait()
+            end
+            
             local highlight = Instance.new("Highlight")
             highlight.Parent = player.Character or player.CharacterAdded:Wait()
+            
+            -- Assign colors based on roles
             if player.Team == game.Teams.Murderers then
                 highlight.FillColor = Color3.fromRGB(255, 0, 0) -- Red for murderers
             elseif player.Team == game.Teams.Sheriffs then
