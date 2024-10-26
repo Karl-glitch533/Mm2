@@ -149,12 +149,17 @@ local function addEsp(player)
     end
 end
 
--- Initial ESP for existing players
-for _, player in pairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer then
-        addEsp(player)
+-- Function to refresh ESP for all players
+local function refreshEsp()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            addEsp(player)
+        end
     end
 end
+
+-- Initial ESP for existing players
+refreshEsp()
 
 -- ESP for new players
 Players.PlayerAdded:Connect(function(player)
@@ -166,9 +171,5 @@ end)
 
 -- Repeat ESP when the round ends
 game:GetService("ReplicatedStorage").RoundEnded:Connect(function()
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            addEsp(player)
-        end
-    end
+    refreshEsp()  -- Refresh ESP for all players at the start of each round
 end)
