@@ -30,7 +30,7 @@ closeButton.Position = UDim2.new(0.25, 0, 0.1, 0)
 closeButton.Text = "Close GUI"
 closeButton.TextColor3 = Color3.fromRGB(255, 0, 0)
 
-local openButton = Instance.new("TextButton", MainFrame)
+local openButton = Instance.new("TextButton", playerGui)
 openButton.Size = UDim2.new(0.5, 0, 0, 50)
 openButton.Position = UDim2.new(0.25, 0, 0.1, 0)
 openButton.Text = "Open GUI"
@@ -166,3 +166,10 @@ closeButton.MouseButton1Click:Connect(function()
     collectingCandy = false
     shooting = false
 end)
+
+-- Show the Open Button when the GUI is closed
+MainFrame:GetPropertyChangedSignal("Visible"):Connect(function()
+    openButton.Visible = not MainFrame.Visible
+end)
+
+openButton.Visible = true
