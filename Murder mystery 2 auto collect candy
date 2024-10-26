@@ -59,7 +59,7 @@ CreateButton("Toggle Auto Candy", function()
         toggleButton.Text = "Auto Candy: ON"
         local player = game.Players.LocalPlayer
         local character = player.Character or player.CharacterAdded:Wait()
-        
+
         while isCollecting do
             for _, candy in pairs(workspace:GetChildren()) do
                 if candy:IsA("Part") and candy.Name == "Candy" and not candiesCollected[candy] then
@@ -135,15 +135,32 @@ local function createIdentifyButton()
     identifyButton.MouseButton1Click:Connect(function()
         for _, player in pairs(game.Players:GetPlayers()) do
             if player.Team == "Murderer" then
-                player.Character.HumanoidRootPart.CFrame = CFrame.new(0, 0, 0) -- Teleport to Murderer (example coordinates)
+                -- Highlight murderer
+                player.Character.HumanoidRootPart.BrickColor = BrickColor.new("Bright red")
+                player.Character.HumanoidRootPart.Material = Enum.Material.Neon
             elseif player.Team == "Sheriff" then
-                player.Character.HumanoidRootPart.CFrame = CFrame.new(0, 0, 0) -- Teleport to Sheriff (example coordinates)
+                -- Highlight sheriff
+                player.Character.HumanoidRootPart.BrickColor = BrickColor.new("Bright blue")
+                player.Character.HumanoidRootPart.Material = Enum.Material.Neon
             end
         end
     end)
 end
 
 createIdentifyButton()
+
+-- Grab Gun Button
+CreateButton("Grab Gun", function()
+    local player = game.Players.LocalPlayer
+    local gun = workspace:FindFirstChild("Gun") -- Change this based on how your game handles guns
+    if gun then
+        player.Character.HumanoidRootPart.CFrame = gun.CFrame -- Teleport to gun
+        wait(0.5) -- Small delay to simulate grabbing
+        gun:Destroy() -- Remove the gun from the workspace (assuming it's a one-time use)
+    else
+        print("Gun not found.")
+    end
+end, UDim2.new(0.05, 0, 0.5, 0))
 
 -- Exit Button
 CreateButton("Exit", function()
