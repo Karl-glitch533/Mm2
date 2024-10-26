@@ -27,7 +27,7 @@ Title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 Title.BorderColor3 = Color3.fromRGB(0, 255, 0)
 Title.Parent = MainFrame
 
--- GUI Toggle Button
+-- GUI Toggle Button positioned on the left side of the screen
 local toggleGuiButton = Instance.new("TextButton")
 toggleGuiButton.Size = UDim2.new(0, 80, 0, 30)
 toggleGuiButton.Position = UDim2.new(0, 10, 0.5, -15)  -- Positioned on the left side
@@ -105,19 +105,13 @@ end)
 local function performSilentShoot()
     if LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun") then
         for _, player in pairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Character then
-                local murdererFound = false
-                if player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife") then
-                    murdererFound = true
-                    LocalPlayer.Character.Humanoid:EquipTool(LocalPlayer.Backpack:FindFirstChild("Gun"))
-                    -- Simulate shooting at the murderer
-                    player.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position)  -- Aim at murderer
-                    LocalPlayer.Character:FindFirstChild("Gun"):Activate()
-                    print("Shot fired at the murderer!")
-                end
-                if murdererFound then
-                    break  -- Only shoot at one murderer
-                end
+            if player ~= LocalPlayer and player.Character and (player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife")) then
+                -- Equip gun and aim at the murderer
+                LocalPlayer.Character.Humanoid:EquipTool(LocalPlayer.Backpack:FindFirstChild("Gun"))
+                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position)  -- Aim at murderer
+                LocalPlayer.Character:FindFirstChild("Gun"):Activate()  -- Simulate shooting
+                print("Shot fired at the murderer!")
+                break
             end
         end
     end
@@ -129,3 +123,61 @@ game:GetService("RunService").RenderStepped:Connect(function()
         performSilentShoot()
     end
 end)
+
+-- Auto Candy Button
+local autoCandyEnabled = false
+local autoCandyButton = Instance.new("TextButton")
+autoCandyButton.Size = UDim2.new(1, -20, 0, 30)
+autoCandyButton.Position = UDim2.new(0, 10, 0, 130)
+autoCandyButton.Text = "Auto Candy"
+autoCandyButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+autoCandyButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
+autoCandyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoCandyButton.Parent = MainFrame
+
+autoCandyButton.MouseButton1Click:Connect(function()
+    autoCandyEnabled = not autoCandyEnabled
+    if autoCandyEnabled then
+        print("Auto Candy Enabled")
+        while autoCandyEnabled do
+            -- Find the nearest candy
+            local nearestCandy = nil
+            local nearestDistance = math.huge
+            for _, item in pairs(Workspace:GetDescendants()) do
+                if item:IsA("Part") and item.Name == "Candy" then  -- Ensure "Candy" is the correct name
+                    local distance = (LocalPlayer.Character.HumanoidRootPart.Position - item.Position).magnitude
+                    if distance < nearestDistance then
+                        nearestDistance = distance
+                        nearestCandy = item
+                    end
+                end
+            end
+            
+            -- Teleport to the nearest candy if found
+            if nearestCandy then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(nearestCandy.Position)  -- Teleport to candy's position
+                wait(1)  -- Wait to collect the candy
+            else
+                print("No candy found nearby.")
+            end
+            
+            wait(0.5) -- Small delay between checks to avoid overloading
+        end
+    else
+        print("Auto Candy Disabled")
+    end
+end)
+
+-- Kill All Button
+local killAllButton = Instance.new("TextButton")
+killAllButton.Size = UDim2.new(1, -20, 0, 30)
+killAllButton.Position = UDim2.new(0, 10, 0, 170)
+killAllButton.Text = "Kill All"
+killAllButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+killAllButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
+killAllButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+killAllButton.Parent = MainFrame
+
+killAllButton.MouseButton1Click:Connect(function()
+    if LocalPlayer.Backpack:FindFirstChild("Knife") or LocalPlayer.Character:FindFirstChild("Knife") then
+        for _, player
