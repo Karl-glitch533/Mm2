@@ -29,11 +29,11 @@ Title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 Title.BorderColor3 = Color3.fromRGB(0, 255, 0)
 Title.Parent = MainFrame
 
--- GUI Toggle positioned on the left side of the screen
+-- GUI Toggle positioned on the right side of the screen
 local guiEnabled = true
 local toggleGuiButton = Instance.new("TextButton")
 toggleGuiButton.Size = UDim2.new(0, 80, 0, 30)
-toggleGuiButton.Position = UDim2.new(0, 10, 0.5, -200)  -- Positioned on the left side
+toggleGuiButton.Position = UDim2.new(0, 210, 0.5, -15)  -- Positioned on the right side
 toggleGuiButton.Text = "Toggle GUI"
 toggleGuiButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 toggleGuiButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
@@ -49,7 +49,7 @@ end)
 local silentAimEnabled = false
 local silentAimButton = Instance.new("TextButton")
 silentAimButton.Size = UDim2.new(0, 80, 0, 30)
-silentAimButton.Position = UDim2.new(0, 10, 0, 90)
+silentAimButton.Position = UDim2.new(0, 10, 0, 50)
 silentAimButton.Text = "Silent Aim"
 silentAimButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 silentAimButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
@@ -68,7 +68,7 @@ end)
 -- Grab Gun Button
 local grabGunButton = Instance.new("TextButton")
 grabGunButton.Size = UDim2.new(0, 80, 0, 30)
-grabGunButton.Position = UDim2.new(0, 10, 0, 130)
+grabGunButton.Position = UDim2.new(0, 10, 0, 90)
 grabGunButton.Text = "Grab Gun"
 grabGunButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 grabGunButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
@@ -79,6 +79,7 @@ grabGunButton.MouseButton1Click:Connect(function()
     for _, item in pairs(Workspace:GetDescendants()) do
         if item:IsA("Tool") and item.Name == "Gun" then
             LocalPlayer.Character.HumanoidRootPart.CFrame = item.Handle.CFrame
+            item.Parent = LocalPlayer.Backpack  -- Move the gun to the player's backpack
             break
         end
     end
@@ -127,7 +128,7 @@ local function onShoot()
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= LocalPlayer and player.Character and (player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife")) then
                 local murderPosition = player.Character.HumanoidRootPart.Position
-                local bullet = LocalPlayer.Character:FindFirstChild("Gun").Handle.Bullet
+                local bullet = LocalPlayer.Character:FindFirstChild("Gun") and LocalPlayer.Character.Gun:FindFirstChild("Handle").Bullet
                 if bullet then
                     bullet.CFrame = CFrame.new(bullet.Position, murderPosition)
                     break
