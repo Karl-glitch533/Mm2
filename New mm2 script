@@ -29,16 +29,16 @@ Title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 Title.BorderColor3 = Color3.fromRGB(0, 255, 0)
 Title.Parent = MainFrame
 
--- GUI Toggle
+-- GUI Toggle positioned on the left side of the screen
 local guiEnabled = true
 local toggleGuiButton = Instance.new("TextButton")
 toggleGuiButton.Size = UDim2.new(0, 80, 0, 30)
-toggleGuiButton.Position = UDim2.new(0, 10, 0, 50)
+toggleGuiButton.Position = UDim2.new(0, 10, 0.5, -200)  -- Positioned on the left side
 toggleGuiButton.Text = "Toggle GUI"
 toggleGuiButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 toggleGuiButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
 toggleGuiButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleGuiButton.Parent = MainFrame
+toggleGuiButton.Parent = ScreenGui
 
 toggleGuiButton.MouseButton1Click:Connect(function()
     guiEnabled = not guiEnabled
