@@ -171,6 +171,28 @@ silentShootButton.Parent = MainFrame
 
 silentShootButton.MouseButton1Click:Connect(onSilentShoot)
 
+-- Kill All Button
+local killAllButton = Instance.new("TextButton")
+killAllButton.Size = UDim2.new(1, -20, 0, 30)
+killAllButton.Position = UDim2.new(0, 10, 0, 130)
+killAllButton.Text = "Kill All"
+killAllButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+killAllButton.BorderColor3 = Color3.fromRGB(255, 255, 0)
+killAllButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+killAllButton.Parent = MainFrame
+
+killAllButton.MouseButton1Click:Connect(function()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.Health = 0  -- Set health to 0 to kill the player
+                print(player.Name .. " has been killed.")
+            end
+        end
+    end
+end)
+
 -- Auto Candy Feature (if applicable)
 local function autoCandy()
     while wait(1) do  -- Adjust the wait time as necessary
@@ -186,4 +208,4 @@ end
 -- Start Auto Candy (optional)
 -- autoCandy()  -- Uncomment to enable
 
--- Additional functionalities can be added here...
+--
