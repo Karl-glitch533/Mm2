@@ -1,7 +1,7 @@
 -- Services
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- ScreenGui setup
 local ScreenGui = Instance.new("ScreenGui")
@@ -37,10 +37,12 @@ toggleGuiButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
 toggleGuiButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 toggleGuiButton.Parent = ScreenGui
 
+-- Toggle Main Frame visibility with the button
 toggleGuiButton.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible  -- Toggle visibility
 end)
 
+-- The rest of your GUI buttons and functions go here
 -- Grab Gun Button
 local grabGunButton = Instance.new("TextButton")
 grabGunButton.Size = UDim2.new(1, -20, 0, 30)
@@ -113,7 +115,7 @@ autoFarmButton.Parent = MainFrame
 
 autoFarmButton.MouseButton1Click:Connect(function()
     while wait(1) do  -- Adjust the wait time as necessary
-        for _, item in pairs(Workspace:GetChildren()) do
+        for _, item in pairs(ReplicatedStorage:GetChildren()) do
             if item:IsA("Tool") and item.Name == "Candy" then
                 item.Parent = LocalPlayer.Backpack  -- Automatically grab candy
                 print("Candy grabbed automatically.")
