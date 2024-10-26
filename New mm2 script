@@ -85,11 +85,50 @@ grabGunButton.MouseButton1Click:Connect(function()
     end
 end)
 
+-- Auto Candy Button
+local autoCandyEnabled = false
+local autoCandyButton = Instance.new("TextButton")
+autoCandyButton.Size = UDim2.new(0, 80, 0, 30)
+autoCandyButton.Position = UDim2.new(0, 10, 0, 130)
+autoCandyButton.Text = "Auto Candy"
+autoCandyButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+autoCandyButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
+autoCandyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoCandyButton.Parent = MainFrame
+
+autoCandyButton.MouseButton1Click:Connect(function()
+    autoCandyEnabled = not autoCandyEnabled
+    if autoCandyEnabled then
+        print("Auto Candy Enabled")
+        while autoCandyEnabled do
+            local candy = Workspace:FindFirstChild("Candy") -- Adjust this to match the candy item name in the game
+            if candy then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = candy.Handle.CFrame -- Teleport to candy's position
+                wait(1) -- Delay before moving again (adjust as needed)
+            end
+            
+            -- Check if player's backpack is full (adjust condition based on your game's logic)
+            if #LocalPlayer.Backpack:GetChildren() >= 10 then  -- Replace 10 with the max allowed items in backpack
+                print("Backpack is full! Stopping Auto Candy.")
+                autoCandyEnabled = false
+            end
+            
+            wait(0.5) -- Small delay between checks to avoid overloading
+        end
+    else
+        print("Auto Candy Disabled")
+    end
+end)
+
 -- ESP for Player Roles
+local highlights = {}  -- Table to store highlights for players
+
 local function addEsp(player)
     local highlight = Instance.new("Highlight")
     highlight.Adornee = player.Character
     highlight.Parent = player.Character
+
+    highlights[player.UserId] = highlight  -- Store highlight reference
 
     local function updateRole()
         if player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife") then
@@ -101,21 +140,23 @@ local function addEsp(player)
         end
     end
 
-    player.CharacterAdded:Connect(function()
-        wait(1)
-        highlight.Adornee = player.Character
-        updateRole()
+    player.CharacterAdded:Connect(function(character)
+        highlight.Adornee = character  -- Update highlight to new character
+        updateRole()  -- Update role on character addition
     end)
 
     updateRole()
 end
 
+-- Initial ESP for existing players
 for _, player in pairs(Players:GetPlayers()) do
     if player ~= LocalPlayer then
+        player.CharacterAdded:Wait()  -- Wait for character to be added
         addEsp(player)
     end
 end
 
+-- Add ESP for new players joining
 Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function()
         addEsp(player)
