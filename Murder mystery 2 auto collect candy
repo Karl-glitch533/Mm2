@@ -85,6 +85,18 @@ CreateButton("Toggle Auto Shoot", function()
                 if player.Character then
                     -- Code to automatically shoot at the murderer goes here
                     print("Auto shoot activated on murderer.")
+                    -- Example shooting function (assuming you have an aiming and shooting mechanism):
+                    local murderer = nil -- Find the murderer here
+                    for _, p in pairs(game.Players:GetPlayers()) do
+                        if p.Team == game.Teams.Murderers then
+                            murderer = p
+                            break
+                        end
+                    end
+                    if murderer then
+                        -- Insert shooting logic here
+                        print("Shooting at murderer!")
+                    end
                 end
             end)
         end
@@ -158,5 +170,25 @@ UIS.InputChanged:Connect(function(input)
     if input == dragInput and dragging then
         local delta = input.Position - dragStart
         MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-- Function to continuously auto-shoot if enabled
+game:GetService("RunService").RenderStepped:Connect(function()
+    if autoShoot then
+        local player = game.Players.LocalPlayer
+        if player.Character then
+            local murderer = nil -- Logic to find the murderer
+            for _, p in pairs(game.Players:GetPlayers()) do
+                if p.Team == game.Teams.Murderers then
+                    murderer = p
+                    break
+                end
+            end
+            if murderer then
+                -- Shooting logic here, replace this with the actual shooting method
+                print("Auto shooting at murderer!")
+            end
+        end
     end
 end)
