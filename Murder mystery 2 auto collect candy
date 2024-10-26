@@ -7,8 +7,8 @@ VanxellHub.Name = "VanxellHub"
 VanxellHub.Parent = game.CoreGui
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 400, 0, 300)
-MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
+MainFrame.Size = UDim2.new(0, 400, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -200, 0.5, -200)
 MainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 MainFrame.Parent = VanxellHub
 MainFrame.Visible = false  -- Start hidden
@@ -46,33 +46,76 @@ CreateButton("Toggle Auto Collect Candy", function()
     end
 end, MainFrame, UDim2.new(0.05, 0, 0.1, 0))
 
--- Identify Murder/Sheriff Feature
-local identifyMurderSheriff = false
-CreateButton("Identify Murder/Sheriff", function()
-    identifyMurderSheriff = not identifyMurderSheriff
-    if identifyMurderSheriff then
-        while identifyMurderSheriff do
-            -- Code to highlight murder/sheriff goes here
-            wait(1) -- Adjust as needed
-        end
-    end
-end, MainFrame, UDim2.new(0.05, 0, 0.2, 0))
-
 -- Grab Gun Feature
 CreateButton("Grab Gun", function()
-    -- Code to grab gun from dead sheriff goes here
-end, MainFrame, UDim2.new(0.05, 0, 0.3, 0))
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    
+    for _, v in pairs(workspace:GetChildren()) do
+        if v:IsA("Model") and v:FindFirstChild("Humanoid") and v.Humanoid.Health <= 0 and v:FindFirstChild("Gun") then
+            local gun = v.Gun:Clone()
+            gun.Parent = character
+            gun.Position = character.PrimaryPart.Position
+            -- Add additional code to equip the gun if needed
+            print("Gun grabbed from dead sheriff.")
+            return
+        end
+    end
+    print("No gun available.")
+end, MainFrame, UDim2.new(0.05, 0, 0.2, 0))
 
 -- Auto Shoot Feature
 local autoShoot = false
+local shootButton
+
 CreateButton("Toggle Auto Shoot", function()
     autoShoot = not autoShoot
     if autoShoot then
-        while autoShoot do
-            -- Code for auto shooting murder goes here
-            wait(0.5) -- Adjust as needed
+        if not shootButton then
+            shootButton = Instance.new("TextButton")
+            shootButton.Text = "Shoot Murderer"
+            shootButton.Size = UDim2.new(0, 100, 0, 30)
+            shootButton.Position = UDim2.new(0.9, 0, 0.5, 0) -- Right side of GUI
+            shootButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+            shootButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            shootButton.Parent = MainFrame
+
+            shootButton.MouseButton1Click:Connect(function()
+                local player = game.Players.LocalPlayer
+                if player.Character then
+                    -- Code to automatically shoot at the murderer goes here
+                    print("Auto shoot activated on murderer.")
+                end
+            end)
+        end
+    else
+        if shootButton then
+            shootButton:Destroy()
+            shootButton = nil
         end
     end
+end, MainFrame, UDim2.new(0.05, 0, 0.3, 0))
+
+-- Identify Players Feature
+local function identifyPlayers()
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player ~= game.Players.LocalPlayer then
+            local highlight = Instance.new("Highlight")
+            highlight.Parent = player.Character or player.CharacterAdded:Wait()
+            if player.Team == game.Teams.Murderers then
+                highlight.FillColor = Color3.fromRGB(255, 0, 0) -- Red for murderers
+            elseif player.Team == game.Teams.Sheriffs then
+                highlight.FillColor = Color3.fromRGB(0, 0, 255) -- Blue for sheriffs
+            else
+                highlight.FillColor = Color3.fromRGB(0, 255, 0) -- Green for innocents
+            end
+            highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+        end
+    end
+end
+
+CreateButton("Identify Players", function()
+    identifyPlayers()
 end, MainFrame, UDim2.new(0.05, 0, 0.4, 0))
 
 -- Open/Close GUI Button
