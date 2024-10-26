@@ -1,0 +1,125 @@
+-- Vanxell Hub for Murder Mystery 2
+-- WARNING: Use this script at your own risk.
+
+local VanxellHub = Instance.new("ScreenGui")
+VanxellHub.Name = "VanxellHub"
+VanxellHub.Parent = game.CoreGui
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 300, 0, 200)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+MainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+MainFrame.Visible = false -- Start with GUI hidden
+MainFrame.Parent = VanxellHub
+
+local Title = Instance.new("TextLabel")
+Title.Text = "Vanxell Hub - Candy Collector"
+Title.Size = UDim2.new(1, 0, 0, 50)
+Title.Position = UDim2.new(0, 0, 0, 0)
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.BackgroundTransparency = 1
+Title.TextScaled = true
+Title.Parent = MainFrame
+
+-- Function to create toggle buttons for features
+local function CreateToggleButton(name)
+    local Button = Instance.new("TextButton")
+    Button.Text = name
+    Button.Size = UDim2.new(0.9, 0, 0, 40)
+    Button.Position = UDim2.new(0.05, 0, #MainFrame:GetChildren() * 0.12 + 0.1, 0)
+    Button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Button.Parent = MainFrame
+    return Button
+end
+
+-- Auto Collect Candy Feature
+local autoCollect = false
+local autoCollectButton = CreateToggleButton("Toggle Auto Collect Candy")
+autoCollectButton.MouseButton1Click:Connect(function()
+    autoCollect = not autoCollect
+    if autoCollect then
+        autoCollectButton.Text = "Auto Collect: ON"
+        
+        -- Lay down and collect candy
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        
+        character:WaitForChild("Humanoid").Sit = true -- Lay down
+        
+        while autoCollect do
+            for _, candy in pairs(workspace:GetChildren()) do
+                if candy:IsA("Part") and candy.Name == "Candy" then
+                    local distance = (character.HumanoidRootPart.Position - candy.Position).magnitude
+                    if distance < 10 then -- Adjust distance as necessary
+                        -- Collect the candy
+                        fireclickdetector(candy:FindFirstChildOfClass("ClickDetector"))
+                    end
+                end
+            end
+            wait(0.5) -- Delay between candy checks
+        end
+        
+        character:WaitForChild("Humanoid").Sit = false -- Stand up when done
+    else
+        autoCollectButton.Text = "Auto Collect: OFF"
+        character:WaitForChild("Humanoid").Sit = false -- Stand up when toggled off
+    end
+end)
+
+-- Exit Button
+local ExitButton = Instance.new("TextButton")
+ExitButton.Text = "Exit"
+ExitButton.Size = UDim2.new(0.9, 0, 0, 40)
+ExitButton.Position = UDim2.new(0.05, 0, 0.8, 0)
+ExitButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+ExitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExitButton.Parent = MainFrame
+ExitButton.MouseButton1Click:Connect(function()
+    VanxellHub:Destroy()
+end)
+
+-- Close/Open GUI Button
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Text = "Open Hub"
+ToggleButton.Size = UDim2.new(0.1, 0, 0.05, 0)
+ToggleButton.Position = UDim2.new(0.01, 0, 0.01, 0)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Parent = VanxellHub
+
+ToggleButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+    ToggleButton.Text = MainFrame.Visible and "Close Hub" or "Open Hub"
+end)
+
+-- Draggable UI Function
+local UIS = game:GetService("UserInputService")
+local dragging, dragInput, dragStart, startPos
+
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+MainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
