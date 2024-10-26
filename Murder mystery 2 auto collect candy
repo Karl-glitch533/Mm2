@@ -45,23 +45,24 @@ candyCollectButton.MouseButton1Click:Connect(function()
     if autoCollect then
         candyCollectButton.Text = "Auto Collect: ON"
 
-        -- Teleport to candy collection area (update these coordinates)
-        local candyLocation = Vector3.new(0, 0, 0) -- Set this to the coordinates of the candy area
-        character:SetPrimaryPartCFrame(CFrame.new(candyLocation))
-
         humanoid.Sit = true -- Lay down
 
         while autoCollect do
-            for _, item in pairs(workspace:GetChildren()) do
+            -- Find all candies in the game
+            local candies = workspace:GetChildren()
+            for _, item in pairs(candies) do
                 if item:IsA("Part") and item.Name == "Candy" then
                     local distance = (character.HumanoidRootPart.Position - item.Position).magnitude
-                    if distance < 10 then -- Adjust distance as necessary
+                    if distance < 10 then -- Check if within distance to collect candy
                         -- Collect the candy
                         local clickDetector = item:FindFirstChildOfClass("ClickDetector")
                         if clickDetector then
                             fireclickdetector(clickDetector) -- Collect the candy
                             wait(0.1) -- Small delay to avoid rapid collection
                         end
+                    else
+                        -- Teleport to the candy if out of range
+                        character:SetPrimaryPartCFrame(item.CFrame) -- Teleport to the candy
                     end
                 end
             end
