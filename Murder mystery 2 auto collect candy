@@ -25,17 +25,18 @@ Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
 Title.TextScaled = true
 
-local closeButton = Instance.new("TextButton", MainFrame)
-closeButton.Size = UDim2.new(0.5, 0, 0, 50)
-closeButton.Position = UDim2.new(0.25, 0, 0.1, 0)
-closeButton.Text = "Close GUI"
-closeButton.TextColor3 = Color3.fromRGB(255, 0, 0)
-
+-- Position buttons to the left
 local openButton = Instance.new("TextButton", playerGui)
 openButton.Size = UDim2.new(0.5, 0, 0, 50)
-openButton.Position = UDim2.new(0.25, 0, 0.1, 0)
+openButton.Position = UDim2.new(0, 0, 0.1, 0)
 openButton.Text = "Open GUI"
 openButton.TextColor3 = Color3.fromRGB(0, 255, 0)
+
+local closeButton = Instance.new("TextButton", MainFrame)
+closeButton.Size = UDim2.new(0.5, 0, 0, 50)
+closeButton.Position = UDim2.new(0, 0, 0.1, 0)
+closeButton.Text = "Close GUI"
+closeButton.TextColor3 = Color3.fromRGB(255, 0, 0)
 
 local autoCandyButton = Instance.new("TextButton", MainFrame)
 autoCandyButton.Size = UDim2.new(1, 0, 0, 50)
@@ -109,7 +110,8 @@ identifyButton.MouseButton1Click:Connect(function()
     end
     
     local function highlightRole()
-        while wait(1) do
+        while true do
+            wait(1) -- Adjust to control how often it checks
             for _, v in pairs(Players:GetPlayers()) do
                 if v.Name ~= LocalPlayer.Name and v:FindFirstChild("Player") and v.Player:FindFirstChild("Role") then
                     local highlight = Instance.new("Highlight", v)
@@ -124,6 +126,7 @@ identifyButton.MouseButton1Click:Connect(function()
             end
         end
     end
+    
     highlightRole()
 end)
 
