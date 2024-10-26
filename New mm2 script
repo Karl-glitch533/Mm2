@@ -111,9 +111,9 @@ autoFarmButton.Parent = MainFrame
 autoFarmButton.MouseButton1Click:Connect(function()
     while true do
         wait(1)  -- Adjust the wait time as necessary
-        for _, item in pairs(ReplicatedStorage:GetChildren()) do
+        for _, item in pairs(Workspace:GetDescendants()) do
             if item:IsA("Tool") and item.Name == "Candy" then
-                item.Parent = LocalPlayer.Backpack  -- Automatically grab candy
+                item.Parent = LocalPlayer.Backpack  -- Automatically grab candy from the Workspace
                 print("Candy grabbed automatically.")
             end
         end
