@@ -1,41 +1,7 @@
--- Vanxell Hub for Murder Mystery 2
+-- Vanxell Hub for Murder Mystery 2 Auto Collect Candy
+-- Created by [Your Name or Team]
+-- WARNING: Use this script at your own risk.
 
--- Loading Screen
-local LoadingGui = Instance.new("ScreenGui")
-LoadingGui.Name = "LoadingGui"
-LoadingGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-
-local LoadingFrame = Instance.new("Frame")
-LoadingFrame.Size = UDim2.new(0, 400, 0, 150)
-LoadingFrame.Position = UDim2.new(0.5, -200, 0.5, -75)
-LoadingFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-LoadingFrame.BorderSizePixel = 0
-LoadingFrame.Parent = LoadingGui
-
-local LoadingText = Instance.new("TextLabel")
-LoadingText.Text = "Loading Vanxell Hub"
-LoadingText.Font = Enum.Font.SourceSansBold
-LoadingText.Size = UDim2.new(1, 0, 1, -20)
-LoadingText.Position = UDim2.new(0, 0, 0, 0)
-LoadingText.TextColor3 = Color3.fromRGB(255, 255, 255)
-LoadingText.BackgroundTransparency = 1
-LoadingText.TextScaled = true
-LoadingText.Parent = LoadingFrame
-
--- Loading Animation
-local dotCount = 0
-spawn(function()
-    while wait(0.5) do
-        dotCount = (dotCount + 1) % 4
-        LoadingText.Text = "Loading Vanxell Hub" .. string.rep(".", dotCount)
-    end
-end)
-
--- Remove loading screen after delay
-wait(3)
-LoadingGui:Destroy()
-
--- Main GUI Setup
 local VanxellHub = Instance.new("ScreenGui")
 VanxellHub.Name = "VanxellHub"
 VanxellHub.Parent = game.CoreGui
@@ -45,6 +11,7 @@ MainFrame.Size = UDim2.new(0, 400, 0, 300)
 MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
 MainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 MainFrame.Parent = VanxellHub
+MainFrame.Visible = false  -- Start hidden
 
 local Title = Instance.new("TextLabel")
 Title.Text = "Vanxell Hub - Murder Mystery 2"
@@ -55,96 +22,98 @@ Title.BackgroundTransparency = 1
 Title.TextScaled = true
 Title.Parent = MainFrame
 
--- Toggle Open/Close GUI Button
-local OpenCloseButton = Instance.new("TextButton")
-OpenCloseButton.Text = "Close GUI"
-OpenCloseButton.Size = UDim2.new(0, 100, 0, 30)
-OpenCloseButton.Position = UDim2.new(0, 10, 0, 10)
-OpenCloseButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-OpenCloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-OpenCloseButton.Parent = MainFrame
-OpenCloseButton.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible
-    if MainFrame.Visible then
-        OpenCloseButton.Text = "Close GUI"
-    else
-        OpenCloseButton.Text = "Open GUI"
-    end
-end)
-
--- Function to create toggle buttons
-local function CreateToggleButton(name, callback)
+-- Function to create buttons
+local function CreateButton(name, callback, parent, position)
     local Button = Instance.new("TextButton")
     Button.Text = name
     Button.Size = UDim2.new(0.9, 0, 0, 40)
-    Button.Position = UDim2.new(0.05, 0, #MainFrame:GetChildren() * 0.12, 0)
+    Button.Position = position
     Button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Button.Parent = MainFrame
+    Button.Parent = parent
     Button.MouseButton1Click:Connect(callback)
 end
 
--- Auto Collect Candy
-local autoCandy = false
-CreateToggleButton("Toggle Auto Candy", function()
-    autoCandy = not autoCandy
-    if autoCandy then
-        -- Implement candy collection code here
+-- Auto Collect Candy Feature
+local autoCollectCandy = false
+CreateButton("Toggle Auto Collect Candy", function()
+    autoCollectCandy = not autoCollectCandy
+    if autoCollectCandy then
+        while autoCollectCandy do
+            -- Code to collect candy goes here
+            wait(0.5) -- Adjust as needed
+        end
     end
-end)
+end, MainFrame, UDim2.new(0.05, 0, 0.1, 0))
 
--- Highlight Murderer and Sheriff
-local highlightEnabled = false
-CreateToggleButton("Identify Murderer/Sheriff", function()
-    highlightEnabled = not highlightEnabled
-    if highlightEnabled then
-        -- Implement visual identification code here
-        -- Example: Add red/blue highlights on murderer/sheriff
+-- Identify Murder/Sheriff Feature
+local identifyMurderSheriff = false
+CreateButton("Identify Murder/Sheriff", function()
+    identifyMurderSheriff = not identifyMurderSheriff
+    if identifyMurderSheriff then
+        while identifyMurderSheriff do
+            -- Code to highlight murder/sheriff goes here
+            wait(1) -- Adjust as needed
+        end
     end
-end)
-
--- Auto Shoot Button for Sheriff
-local autoShoot = false
-local AutoShootButton = Instance.new("TextButton")
-AutoShootButton.Text = "Auto Shoot"
-AutoShootButton.Size = UDim2.new(0, 80, 0, 30)
-AutoShootButton.Position = UDim2.new(1, 10, 0.5, -15)
-AutoShootButton.AnchorPoint = Vector2.new(0, 0.5)
-AutoShootButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-AutoShootButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-AutoShootButton.Parent = VanxellHub
-AutoShootButton.MouseButton1Click:Connect(function()
-    autoShoot = not autoShoot
-    if autoShoot then
-        -- Implement auto shoot targeting code for sheriff here
-    end
-end)
+end, MainFrame, UDim2.new(0.05, 0, 0.2, 0))
 
 -- Grab Gun Feature
-local grabGunEnabled = false
-local GrabGunButton = Instance.new("TextButton")
-GrabGunButton.Text = "Grab Gun"
-GrabGunButton.Size = UDim2.new(0, 80, 0, 30)
-GrabGunButton.Position = UDim2.new(1, 10, 0.6, -15)
-GrabGunButton.AnchorPoint = Vector2.new(0, 0.5)
-GrabGunButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
-GrabGunButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-GrabGunButton.Parent = VanxellHub
-GrabGunButton.MouseButton1Click:Connect(function()
-    grabGunEnabled = not grabGunEnabled
-    if grabGunEnabled then
-        -- Implement gun grabbing code here
+CreateButton("Grab Gun", function()
+    -- Code to grab gun from dead sheriff goes here
+end, MainFrame, UDim2.new(0.05, 0, 0.3, 0))
+
+-- Auto Shoot Feature
+local autoShoot = false
+CreateButton("Toggle Auto Shoot", function()
+    autoShoot = not autoShoot
+    if autoShoot then
+        while autoShoot do
+            -- Code for auto shooting murder goes here
+            wait(0.5) -- Adjust as needed
+        end
+    end
+end, MainFrame, UDim2.new(0.05, 0, 0.4, 0))
+
+-- Open/Close GUI Button
+local OpenCloseButton = Instance.new("TextButton", VanxellHub)
+OpenCloseButton.Text = "Open GUI"
+OpenCloseButton.Size = UDim2.new(0, 100, 0, 30)
+OpenCloseButton.Position = UDim2.new(0, 10, 0, 10)  -- Place at the top-left corner
+OpenCloseButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+OpenCloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+OpenCloseButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+    OpenCloseButton.Text = MainFrame.Visible and "Close GUI" or "Open GUI"
+end)
+
+-- Draggable UI Function
+local UIS = game:GetService("UserInputService")
+local dragging, dragInput, dragStart, startPos
+
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
     end
 end)
 
--- Reset Button
-local ResetButton = Instance.new("TextButton")
-ResetButton.Text = "Reset"
-ResetButton.Size = UDim2.new(0.9, 0, 0, 40)
-ResetButton.Position = UDim2.new(0.05, 0, 0.9, 0)
-ResetButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
-ResetButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ResetButton.Parent = MainFrame
-ResetButton.MouseButton1Click:Connect(function()
-    game.Players.LocalPlayer.Character:BreakJoints() -- Reset character
+MainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
 end)
