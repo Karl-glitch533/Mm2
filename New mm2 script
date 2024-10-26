@@ -39,7 +39,9 @@ local function createButton(name, position, callback)
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
     button.Parent = MainFrame
     
-    button.MouseButton1Click:Connect(callback)
+    button.MouseButton1Click:Connect(function()
+        pcall(callback)  -- Use pcall to catch errors in the callback
+    end)
     return button
 end
 
@@ -56,10 +58,15 @@ createButton("Grab Gun", UDim2.new(0, 10, 0, 50), function()
     if not sheriffAlive then
         for _, item in pairs(Workspace:GetDescendants()) do
             if item:IsA("Tool") and item.Name == "Gun" then
-                LocalPlayer.Character.HumanoidRootPart.CFrame = item.Handle.CFrame
-                item.Parent = LocalPlayer.Backpack
-                print("Gun grabbed successfully.")
-                return
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = item.Handle.CFrame
+                    item.Parent = LocalPlayer.Backpack
+                    print("Gun grabbed successfully.")
+                    return
+                else
+                    print("Local player's character or HumanoidRootPart is not found.")
+                    return
+                end
             end
         end
         print("No gun found in the workspace.")
@@ -97,9 +104,13 @@ createButton("Toggle Auto Candy", UDim2.new(0, 10, 0, 130), function()
             end
             
             if nearestCandy then
-                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(nearestCandy.Position)
-                wait(1) -- Wait to collect the candy
-                print("Collected candy.")
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(nearestCandy.Position)
+                    wait(1) -- Wait to collect the candy
+                    print("Collected candy.")
+                else
+                    print("Local player's character or HumanoidRootPart is not found.")
+                end
             else
                 print("No candy found nearby.")
             end
@@ -114,8 +125,13 @@ createButton("Kill All", UDim2.new(0, 10, 0, 170), function()
             if player ~= LocalPlayer and player.Character then
                 player.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame
                 wait(0.1) -- Small delay
-                LocalPlayer.Character:FindFirstChild("Knife"):Activate()
-                print("Killed " .. player.Name)
+                local knife = LocalPlayer.Character:FindFirstChild("Knife")
+                if knife then
+                    knife:Activate()
+                    print("Killed " .. player.Name)
+                else
+                    print("Knife not found in the local player's character.")
+                end
             end
         end
     else
