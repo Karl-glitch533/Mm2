@@ -1,6 +1,7 @@
 -- Services
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+local Workspace = game:GetService("Workspace")
 
 -- ScreenGui setup
 local ScreenGui = Instance.new("ScreenGui")
@@ -71,12 +72,27 @@ grabGunButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 grabGunButton.Parent = MainFrame
 
 grabGunButton.MouseButton1Click:Connect(function()
-    for _, item in pairs(Workspace:GetDescendants()) do
-        if item:IsA("Tool") and item.Name == "Gun" then
-            LocalPlayer.Character.HumanoidRootPart.CFrame = item.Handle.CFrame
-            item.Parent = LocalPlayer.Backpack  -- Move the gun to the player's backpack
+    -- Check if the sheriff is dead
+    local sheriffAlive = false
+    for _, player in pairs(Players:GetPlayers()) do
+        if player.Character and player.Backpack:FindFirstChild("Gun") then
+            sheriffAlive = true
             break
         end
+    end
+
+    if not sheriffAlive then
+        for _, item in pairs(Workspace:GetDescendants()) do
+            if item:IsA("Tool") and item.Name == "Gun" then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = item.Handle.CFrame
+                item.Parent = LocalPlayer.Backpack  -- Move the gun to the player's backpack
+                print("Gun grabbed successfully.")
+                return
+            end
+        end
+        print("No gun found.")
+    else
+        print("Sheriff is still alive. You cannot grab the gun.")
     end
 end)
 
@@ -175,24 +191,4 @@ local function addEsp(player)
 
     -- Connect to Backpack changes for the player
     player.Backpack.ChildAdded:Connect(updateRole)
-    player.Character.DescendantAdded:Connect(updateRole)
-
-    updateRole()  -- Initial role update
-end
-
--- Initial ESP for existing players
-for _, player in pairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer and player.Character then
-        addEsp(player)
-    end
-end
-
--- ESP for new players
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function(character)
-        wait(1)  -- Wait for the character to fully load
-        addEsp(player)
-    end)
-end)
-
--- Main RunService loop (Optional)
+    player.Character.DescendantAdded:Connect
