@@ -29,11 +29,11 @@ Title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 Title.BorderColor3 = Color3.fromRGB(0, 255, 0)
 Title.Parent = MainFrame
 
--- GUI Toggle positioned on the right side of the screen
+-- GUI Toggle positioned on the left side of the screen
 local guiEnabled = true
 local toggleGuiButton = Instance.new("TextButton")
 toggleGuiButton.Size = UDim2.new(0, 80, 0, 30)
-toggleGuiButton.Position = UDim2.new(0, 210, 0.5, -15)  -- Positioned on the right side
+toggleGuiButton.Position = UDim2.new(0, 10, 0.5, -15)  -- Positioned on the left side
 toggleGuiButton.Text = "Toggle GUI"
 toggleGuiButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 toggleGuiButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
@@ -101,10 +101,25 @@ autoCandyButton.MouseButton1Click:Connect(function()
     if autoCandyEnabled then
         print("Auto Candy Enabled")
         while autoCandyEnabled do
-            local candy = Workspace:FindFirstChild("Candy") -- Adjust this to match the candy item name in the game
-            if candy then
-                LocalPlayer.Character.HumanoidRootPart.CFrame = candy.Handle.CFrame -- Teleport to candy's position
-                wait(1) -- Delay before moving again (adjust as needed)
+            -- Find the nearest candy
+            local nearestCandy = nil
+            local nearestDistance = math.huge
+            for _, item in pairs(Workspace:GetDescendants()) do
+                if item:IsA("Part") and item.Name == "Candy" then  -- Ensure "Candy" is the correct name
+                    local distance = (LocalPlayer.Character.HumanoidRootPart.Position - item.Position).magnitude
+                    if distance < nearestDistance then
+                        nearestDistance = distance
+                        nearestCandy = item
+                    end
+                end
+            end
+            
+            -- Teleport to the nearest candy if found
+            if nearestCandy then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(nearestCandy.Position)  -- Teleport to candy's position
+                wait(1)  -- Wait to collect the candy
+            else
+                print("No candy found nearby.")
             end
             
             -- Check if player's backpack is full (adjust condition based on your game's logic)
@@ -121,14 +136,10 @@ autoCandyButton.MouseButton1Click:Connect(function()
 end)
 
 -- ESP for Player Roles
-local highlights = {}  -- Table to store highlights for players
-
 local function addEsp(player)
     local highlight = Instance.new("Highlight")
     highlight.Adornee = player.Character
     highlight.Parent = player.Character
-
-    highlights[player.UserId] = highlight  -- Store highlight reference
 
     local function updateRole()
         if player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife") then
@@ -140,18 +151,22 @@ local function addEsp(player)
         end
     end
 
+    -- Update highlight when character is added or updated
     player.CharacterAdded:Connect(function(character)
         highlight.Adornee = character  -- Update highlight to new character
         updateRole()  -- Update role on character addition
     end)
 
-    updateRole()
+    -- Connect to Backpack changes for the player
+    player.Backpack.ChildAdded:Connect(updateRole)
+    player.Character.DescendantAdded:Connect(updateRole)
+
+    updateRole()  -- Initial role update
 end
 
 -- Initial ESP for existing players
 for _, player in pairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer then
-        player.CharacterAdded:Wait()  -- Wait for character to be added
+    if player ~= LocalPlayer and player.Character then
         addEsp(player)
     end
 end
