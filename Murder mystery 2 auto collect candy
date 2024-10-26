@@ -119,8 +119,6 @@ identifyButton.MouseButton1Click:Connect(function()
                     elseif v.Player.Role.Value == "Sheriff" then
                         highlight.FillColor = Color3.fromRGB(0, 0, 255) -- Blue for Sheriff
                         highlight.OutlineColor = Color3.fromRGB(0, 0, 0)
-                    else
-                        highlight:Destroy() -- Remove highlight if not a role
                     end
                 end
             end
@@ -139,11 +137,13 @@ autoShootButton.MouseButton1Click:Connect(function()
         wait(0.1)
         if LocalPlayer:FindFirstChild("Player") and LocalPlayer.Player:FindFirstChild("Role").Value == "Sheriff" then
             for _, v in pairs(Players:GetPlayers()) do
-                if v.Name ~= LocalPlayer.Name and v.Player:FindFirstChild("Role").Value == "Murderer" then
-                    LocalPlayer.Character.HumanoidRootPart.CFrame = v.Character.HumanoidRootPart.CFrame
-                    wait(0.1)
-                    Mouse:Click() -- Simulate shooting
-                    break
+                if v.Name ~= LocalPlayer.Name and v:FindFirstChild("Player") and v.Player:FindFirstChild("Role").Value == "Murderer" then
+                    -- Simulate shooting at the murderer
+                    if (LocalPlayer.Character.HumanoidRootPart.Position - v.Character.HumanoidRootPart.Position).Magnitude <= 50 then
+                        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(v.Character.HumanoidRootPart.Position + Vector3.new(0, 2, 0)) -- Adjust position above murderer
+                        Mouse:Click() -- Simulate shooting
+                        break
+                    end
                 end
             end
         end
