@@ -2,18 +2,11 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-
--- Ensure that PlayerGui exists
-if not LocalPlayer:FindFirstChild("PlayerGui") then
-    warn("PlayerGui not found!")
-    return
-end
 
 -- ScreenGui setup
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "VanxellHub"
-ScreenGui.Parent = LocalPlayer.PlayerGui
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 -- Main Frame for Hub
 local MainFrame = Instance.new("Frame")
@@ -21,7 +14,7 @@ MainFrame.Size = UDim2.new(0, 300, 0, 400)
 MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)  -- Centered position
 MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 MainFrame.BorderColor3 = Color3.fromRGB(0, 255, 0)
-MainFrame.Visible = true  -- Ensure it's visible on startup
+MainFrame.Visible = false  -- Set to false initially
 MainFrame.Parent = ScreenGui
 
 -- Title
@@ -34,25 +27,98 @@ Title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 Title.BorderColor3 = Color3.fromRGB(0, 255, 0)
 Title.Parent = MainFrame
 
--- Function to create buttons
-local function createButton(name, position, callback)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, -20, 0, 30)
-    button.Position = position
-    button.Text = name
-    button.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    button.BorderColor3 = Color3.fromRGB(0, 255, 0)
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.Parent = MainFrame
-    
-    button.MouseButton1Click:Connect(function()
-        pcall(callback)  -- Use pcall to catch errors in the callback
-    end)
-    return button
+-- GUI Toggle Button positioned on the left side of the screen
+local toggleGuiButton = Instance.new("TextButton")
+toggleGuiButton.Size = UDim2.new(0, 80, 0, 30)
+toggleGuiButton.Position = UDim2.new(0, 10, 0.5, -15)  -- Positioned on the left side
+toggleGuiButton.Text = "Toggle GUI"
+toggleGuiButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+toggleGuiButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
+toggleGuiButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleGuiButton.Parent = ScreenGui
+
+toggleGuiButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible  -- Toggle visibility
+end)
+
+-- Function to add ESP
+local function addEsp(player)
+    if player.Character then
+        local highlight = Instance.new("Highlight")
+        highlight.Adornee = player.Character
+        highlight.Parent = player.Character
+
+        local function updateRole()
+            if player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife") then
+                highlight.FillColor = Color3.fromRGB(255, 0, 0)  -- Murderer (Red)
+            elseif player.Backpack:FindFirstChild("Gun") or player.Character:FindFirstChild("Gun") then
+                highlight.FillColor = Color3.fromRGB(0, 0, 255)  -- Sheriff (Blue)
+            else
+                highlight.FillColor = Color3.fromRGB(0, 255, 0)  -- Innocent (Green)
+            end
+        end
+
+        -- Update highlight when character is added or updated
+        player.CharacterAdded:Connect(function(character)
+            highlight.Adornee = character  -- Update highlight to new character
+            updateRole()  -- Update role on character addition
+        end)
+
+        -- Connect to Backpack changes for the player
+        player.Backpack.ChildAdded:Connect(updateRole)
+        player.Character.DescendantAdded:Connect(updateRole)
+
+        updateRole()  -- Initial role update
+    end
 end
 
+-- Initial ESP for existing players
+for _, player in pairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+        addEsp(player)
+    end
+end
+
+-- ESP for new players
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+        wait(1)  -- Wait for the character to fully load
+        addEsp(player)
+    end)
+end)
+
+-- Function to repeat ESP when the round ends
+local function onRoundEnd()
+    wait(3)  -- Adjust wait time as necessary for the game
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            if player.Character then
+                local highlight = player.Character:FindFirstChildOfClass("Highlight")
+                if highlight then
+                    highlight:Destroy()  -- Remove existing highlight
+                end
+            end
+            addEsp(player)  -- Re-add ESP for each player
+        end
+    end
+end
+
+-- Connect to round end event (you need to define what triggers a round end in your game)
+-- Assuming there is an event or function you can call to know when a round ends
+game:GetService("ReplicatedStorage").RoundEnded.Event:Connect(onRoundEnd) -- Replace with the actual event that signals round end
+
 -- Grab Gun Button
-createButton("Grab Gun", UDim2.new(0, 10, 0, 50), function()
+local grabGunButton = Instance.new("TextButton")
+grabGunButton.Size = UDim2.new(1, -20, 0, 30)
+grabGunButton.Position = UDim2.new(0, 10, 0, 50)
+grabGunButton.Text = "Grab Gun"
+grabGunButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+grabGunButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
+grabGunButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+grabGunButton.Parent = MainFrame
+
+grabGunButton.MouseButton1Click:Connect(function()
+    -- Check if the sheriff is dead
     local sheriffAlive = false
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character and player.Backpack:FindFirstChild("Gun") then
@@ -61,128 +127,24 @@ createButton("Grab Gun", UDim2.new(0, 10, 0, 50), function()
         end
     end
 
+    -- Allow grabbing the gun only if the sheriff is not alive
     if not sheriffAlive then
+        local gunFound = false
         for _, item in pairs(Workspace:GetDescendants()) do
             if item:IsA("Tool") and item.Name == "Gun" then
-                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    LocalPlayer.Character.HumanoidRootPart.CFrame = item.Handle.CFrame
-                    item.Parent = LocalPlayer.Backpack
-                    print("Gun grabbed successfully.")
-                    return
-                else
-                    print("Local player's character or HumanoidRootPart is not found.")
-                    return
-                end
+                LocalPlayer.Character.HumanoidRootPart.CFrame = item.Handle.CFrame
+                item.Parent = LocalPlayer.Backpack  -- Move the gun to the player's backpack
+                gunFound = true
+                print("Gun grabbed successfully.")
+                break
             end
         end
-        print("No gun found in the workspace.")
+        if not gunFound then
+            print("No gun found in the workspace.")
+        end
     else
         print("Sheriff is still alive. You cannot grab the gun.")
     end
 end)
 
--- Silent Shoot Toggle
-local silentShootEnabled = false
-createButton("Toggle Silent Shoot", UDim2.new(0, 10, 0, 90), function()
-    silentShootEnabled = not silentShootEnabled
-    print(silentShootEnabled and "Silent Shoot Enabled" or "Silent Shoot Disabled")
-end)
-
--- Auto Candy Button
-local autoCandyEnabled = false
-createButton("Toggle Auto Candy", UDim2.new(0, 10, 0, 130), function()
-    autoCandyEnabled = not autoCandyEnabled
-    print(autoCandyEnabled and "Auto Candy Enabled" or "Auto Candy Disabled")
-    
-    if autoCandyEnabled then
-        while autoCandyEnabled do
-            wait(0.5)  -- Prevents script from freezing
-            local nearestCandy = nil
-            local nearestDistance = math.huge
-            for _, item in pairs(Workspace:GetDescendants()) do
-                if item:IsA("Part") and item.Name == "Candy" then
-                    local distance = (LocalPlayer.Character.HumanoidRootPart.Position - item.Position).magnitude
-                    if distance < nearestDistance then
-                        nearestDistance = distance
-                        nearestCandy = item
-                    end
-                end
-            end
-            
-            if nearestCandy then
-                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(nearestCandy.Position)
-                    wait(1) -- Wait to collect the candy
-                    print("Collected candy.")
-                else
-                    print("Local player's character or HumanoidRootPart is not found.")
-                end
-            else
-                print("No candy found nearby.")
-            end
-        end
-    end
-end)
-
--- Kill All Button
-createButton("Kill All", UDim2.new(0, 10, 0, 170), function()
-    if LocalPlayer.Backpack:FindFirstChild("Knife") or LocalPlayer.Character:FindFirstChild("Knife") then
-        for _, player in pairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Character then
-                player.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame
-                wait(0.1) -- Small delay
-                local knife = LocalPlayer.Character:FindFirstChild("Knife")
-                if knife then
-                    knife:Activate()
-                    print("Killed " .. player.Name)
-                else
-                    print("Knife not found in the local player's character.")
-                end
-            end
-        end
-    else
-        print("You need to be a murderer with a knife to use Kill All!")
-    end
-end)
-
--- ESP Functionality
-local function createESP(player)
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        local esp = Instance.new("BoxHandleAdornment")
-        esp.Size = Vector3.new(4, 4, 4)
-        esp.Color3 = Color3.new(1, 0, 0) -- Red color for ESP
-        esp.AlwaysOnTop = true
-        esp.ZIndex = 10
-        esp.Parent = player.Character.HumanoidRootPart
-        print("ESP created for " .. player.Name)
-    else
-        print("Failed to create ESP for " .. player.Name)
-    end
-end
-
--- Listen for players joining
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function()
-        wait(1) -- Ensure the character is fully loaded
-        createESP(player)
-    end)
-end)
-
--- Create ESP for existing players
-for _, player in pairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer then
-        player.CharacterAdded:Wait()  -- Ensure the character is loaded
-        createESP(player)
-    end
-end)
-
--- Refresh ESP on round end (Heartbeat)
-RunService.Heartbeat:Connect(function()
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            createESP(player)
-        end
-    end
-end)
-
-print("Script loaded successfully!")
+-- Additional functionality for auto candy and kill all can be included here...
