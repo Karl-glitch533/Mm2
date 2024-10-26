@@ -60,9 +60,9 @@ candyCollectButton.MouseButton1Click:Connect(function()
                             fireclickdetector(clickDetector) -- Collect the candy
                             wait(0.1) -- Small delay to avoid rapid collection
                         end
-                    else
-                        -- Teleport to the candy if out of range
-                        character:SetPrimaryPartCFrame(item.CFrame) -- Teleport to the candy
+                    elseif item.Position.Y >= character.HumanoidRootPart.Position.Y - 3 then
+                        -- Only teleport if the candy is above the character (not falling into void)
+                        character:SetPrimaryPartCFrame(item.CFrame + Vector3.new(0, 3, 0)) -- Teleport to above candy
                     end
                 end
             end
