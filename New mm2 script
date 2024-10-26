@@ -2,6 +2,7 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- ScreenGui setup
 local ScreenGui = Instance.new("ScreenGui")
@@ -105,7 +106,7 @@ end
 
 -- Connect to round end event (you need to define what triggers a round end in your game)
 -- Assuming there is an event or function you can call to know when a round ends
-game:GetService("ReplicatedStorage").RoundEnded.Event:Connect(onRoundEnd) -- Replace with the actual event that signals round end
+ReplicatedStorage.RoundEnded.Event:Connect(onRoundEnd) -- Replace with the actual event that signals round end
 
 -- Grab Gun Button
 local grabGunButton = Instance.new("TextButton")
@@ -147,4 +148,42 @@ grabGunButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Additional functionality for auto candy and kill all can be included here...
+-- Silent Shooting Functionality
+local function onSilentShoot()
+    if LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun") then
+        -- Replace this with the code to enable silent shooting
+        print("Silent shooting is enabled.")
+        -- Your shooting logic here
+    else
+        print("You need to grab the gun first.")
+    end
+end
+
+-- Silent Shoot Button
+local silentShootButton = Instance.new("TextButton")
+silentShootButton.Size = UDim2.new(1, -20, 0, 30)
+silentShootButton.Position = UDim2.new(0, 10, 0, 90)
+silentShootButton.Text = "Silent Shoot"
+silentShootButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+silentShootButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
+silentShootButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+silentShootButton.Parent = MainFrame
+
+silentShootButton.MouseButton1Click:Connect(onSilentShoot)
+
+-- Auto Candy Feature (if applicable)
+local function autoCandy()
+    while wait(1) do  -- Adjust the wait time as necessary
+        for _, item in pairs(Workspace:GetChildren()) do
+            if item:IsA("Tool") and item.Name == "Candy" then
+                item.Parent = LocalPlayer.Backpack  -- Automatically grab candy
+                print("Candy grabbed automatically.")
+            end
+        end
+    end
+end
+
+-- Start Auto Candy (optional)
+-- autoCandy()  -- Uncomment to enable
+
+-- Additional functionalities can be added here...
