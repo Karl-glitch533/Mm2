@@ -1,4 +1,4 @@
--- Vanxell Hub for Murder Mystery 2
+-- Vanxell Hub for Murder Mystery 2 Candy Collector
 -- WARNING: Use this script at your own risk.
 
 local VanxellHub = Instance.new("ScreenGui")
@@ -35,35 +35,47 @@ end
 
 -- Auto Collect Candy Feature
 local autoCollect = false
-local autoCollectButton = CreateToggleButton("Toggle Auto Collect Candy")
-autoCollectButton.MouseButton1Click:Connect(function()
+local candyCollectButton = CreateToggleButton("Toggle Auto Collect Candy")
+candyCollectButton.MouseButton1Click:Connect(function()
     autoCollect = not autoCollect
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+
     if autoCollect then
-        autoCollectButton.Text = "Auto Collect: ON"
-        
-        -- Lay down and collect candy
-        local player = game.Players.LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
-        
-        character:WaitForChild("Humanoid").Sit = true -- Lay down
-        
+        candyCollectButton.Text = "Auto Collect: ON"
+
+        -- Teleport to candy collection area (change these coordinates)
+        local candyLocation = Vector3.new(0, 0, 0) -- Set this to the coordinates of the candy area
+        character:SetPrimaryPartCFrame(CFrame.new(candyLocation))
+
+        humanoid.Sit = true -- Lay down
+
         while autoCollect do
             for _, candy in pairs(workspace:GetChildren()) do
                 if candy:IsA("Part") and candy.Name == "Candy" then
                     local distance = (character.HumanoidRootPart.Position - candy.Position).magnitude
                     if distance < 10 then -- Adjust distance as necessary
                         -- Collect the candy
-                        fireclickdetector(candy:FindFirstChildOfClass("ClickDetector"))
+                        local clickDetector = candy:FindFirstChildOfClass("ClickDetector")
+                        if clickDetector then
+                            fireclickdetector(clickDetector)
+                        end
                     end
                 end
             end
             wait(0.5) -- Delay between candy checks
         end
-        
-        character:WaitForChild("Humanoid").Sit = false -- Stand up when done
+
+        humanoid.Sit = false -- Stand up when done
     else
-        autoCollectButton.Text = "Auto Collect: OFF"
-        character:WaitForChild("Humanoid").Sit = false -- Stand up when toggled off
+        candyCollectButton.Text = "Auto Collect: OFF"
+
+        -- Teleport back to lobby (change these coordinates)
+        local lobbyLocation = Vector3.new(0, 0, 0) -- Set this to the coordinates of the lobby
+        character:SetPrimaryPartCFrame(CFrame.new(lobbyLocation))
+        
+        humanoid.Sit = false -- Stand up when toggled off
     end
 end)
 
