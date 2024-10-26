@@ -9,6 +9,7 @@ local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 400, 0, 300)
 MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
 MainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+MainFrame.Visible = false -- Start hidden
 MainFrame.Parent = VanxellHub
 
 local Title = Instance.new("TextLabel")
@@ -20,8 +21,6 @@ Title.BackgroundTransparency = 1
 Title.TextScaled = true
 Title.Parent = MainFrame
 
-local isCollecting = false
-
 -- Function to create buttons
 local function CreateButton(name, callback, position)
     local Button = Instance.new("TextButton")
@@ -32,17 +31,33 @@ local function CreateButton(name, callback, position)
     Button.TextColor3 = Color3.fromRGB(255, 255, 255)
     Button.Parent = MainFrame
     Button.MouseButton1Click:Connect(callback)
+    return Button
 end
 
+-- Toggle GUI visibility
+local function toggleGUI()
+    MainFrame.Visible = not MainFrame.Visible
+end
+
+-- Create a button to toggle the GUI
+local toggleButton = Instance.new("TextButton")
+toggleButton.Text = "Toggle GUI"
+toggleButton.Size = UDim2.new(0.1, 0, 0.1, 0)
+toggleButton.Position = UDim2.new(0.9, 0, 0, 0)
+toggleButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Parent = VanxellHub
+toggleButton.MouseButton1Click:Connect(toggleGUI)
+
 -- Auto Candy Feature
+local isCollecting = false
 CreateButton("Toggle Auto Candy", function()
     isCollecting = not isCollecting
     if isCollecting then
-        Button.Text = "Auto Candy: ON"
-        -- Teleport to candy and collect
+        toggleButton.Text = "Auto Candy: ON"
         local player = game.Players.LocalPlayer
         local character = player.Character or player.CharacterAdded:Wait()
-
+        
         while isCollecting do
             for _, candy in pairs(workspace:GetChildren()) do
                 if candy:IsA("Part") and candy.Name == "Candy" then
@@ -50,10 +65,10 @@ CreateButton("Toggle Auto Candy", function()
                     wait(0.5) -- Adjust timing as needed
                 end
             end
-            wait(1) -- Wait before next scan for candies
+            wait(1) -- Wait before the next scan for candies
         end
     else
-        Button.Text = "Auto Candy: OFF"
+        toggleButton.Text = "Auto Candy: OFF"
     end
 end, UDim2.new(0.05, 0, 0.1, 0))
 
@@ -68,39 +83,35 @@ local isShooting = false
 CreateButton("Toggle Auto Shoot", function()
     isShooting = not isShooting
     if isShooting then
-        Button.Text = "Auto Shoot: ON"
+        toggleButton.Text = "Auto Shoot: ON"
         local player = game.Players.LocalPlayer
 
         while isShooting do
+            wait(0.5)
             if player and player.Character then
-                -- Check for murderers in your view
-                for _, enemy in pairs(workspace:GetChildren()) do
-                    if enemy:IsA("Model") and enemy:FindFirstChild("Humanoid") and enemy:FindFirstChild("Player") then
-                        -- Assuming murderer has a specific tag or name, adjust this logic
-                        if enemy.Player.Value == "Murderer" then
-                            player.Character:FindFirstChildOfClass("Tool").Activated:Fire()
+                local tool = player.Character:FindFirstChildOfClass("Tool")
+                if tool and tool:IsA("Tool") then
+                    for _, enemy in pairs(workspace:GetChildren()) do
+                        if enemy:IsA("Model") and enemy:FindFirstChild("Humanoid") and enemy:FindFirstChild("Player") then
+                            -- Check if the enemy is the murderer
+                            if enemy.Player.Value == "Murderer" then
+                                tool.Activated:Fire() -- Simulate the shooting
+                                break
+                            end
                         end
                     end
                 end
             end
-            wait(1) -- Adjust as needed
         end
     else
-        Button.Text = "Auto Shoot: OFF"
+        toggleButton.Text = "Auto Shoot: OFF"
     end
 end, UDim2.new(0.05, 0, 0.3, 0))
 
 -- Exit Button
-local ExitButton = Instance.new("TextButton")
-ExitButton.Text = "Exit"
-ExitButton.Size = UDim2.new(0.9, 0, 0, 40)
-ExitButton.Position = UDim2.new(0.05, 0, 0.8, 0)
-ExitButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
-ExitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ExitButton.Parent = MainFrame
-ExitButton.MouseButton1Click:Connect(function()
+CreateButton("Exit", function()
     VanxellHub:Destroy()
-end)
+end, UDim2.new(0.05, 0, 0.8, 0))
 
 -- Draggable UI Function
 local UIS = game:GetService("UserInputService")
