@@ -12,7 +12,7 @@ ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 -- Main Frame for Hub
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 300, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)  -- Centered position
 MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 MainFrame.BorderColor3 = Color3.fromRGB(0, 255, 0)
 MainFrame.Visible = false  -- Set to false initially
@@ -193,3 +193,8 @@ end
 Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function(character)
         wait(1)  -- Wait for the character to fully load
+        addEsp(player)
+    end)
+end)
+
+-- Main RunService loop (Optional
