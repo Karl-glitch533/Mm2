@@ -1,0 +1,151 @@
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+
+-- ScreenGui setup
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "VanxellHub"
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.Enabled = true  -- GUI toggling
+
+-- Main Frame for Hub
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 300, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
+MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+MainFrame.BorderColor3 = Color3.fromRGB(0, 255, 0)
+MainFrame.Visible = true  -- Default visibility
+MainFrame.Parent = ScreenGui
+
+-- Title
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(0, 280, 0, 30)
+Title.Position = UDim2.new(0, 10, 0, 10)
+Title.Text = "Vanxell Hub"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Title.BorderColor3 = Color3.fromRGB(0, 255, 0)
+Title.Parent = MainFrame
+
+-- GUI Toggle
+local guiEnabled = true
+local toggleGuiButton = Instance.new("TextButton")
+toggleGuiButton.Size = UDim2.new(0, 80, 0, 30)
+toggleGuiButton.Position = UDim2.new(0, 10, 0, 50)
+toggleGuiButton.Text = "Toggle GUI"
+toggleGuiButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+toggleGuiButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
+toggleGuiButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleGuiButton.Parent = MainFrame
+
+toggleGuiButton.MouseButton1Click:Connect(function()
+    guiEnabled = not guiEnabled
+    MainFrame.Visible = guiEnabled
+end)
+
+-- Silent Aim Button
+local silentAimEnabled = false
+local silentAimButton = Instance.new("TextButton")
+silentAimButton.Size = UDim2.new(0, 80, 0, 30)
+silentAimButton.Position = UDim2.new(0, 10, 0, 90)
+silentAimButton.Text = "Silent Aim"
+silentAimButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+silentAimButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
+silentAimButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+silentAimButton.Parent = MainFrame
+
+silentAimButton.MouseButton1Click:Connect(function()
+    silentAimEnabled = not silentAimEnabled
+    if silentAimEnabled then
+        print("Silent Aim Enabled")
+    else
+        print("Silent Aim Disabled")
+    end
+end)
+
+-- Grab Gun Button
+local grabGunButton = Instance.new("TextButton")
+grabGunButton.Size = UDim2.new(0, 80, 0, 30)
+grabGunButton.Position = UDim2.new(0, 10, 0, 130)
+grabGunButton.Text = "Grab Gun"
+grabGunButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+grabGunButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
+grabGunButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+grabGunButton.Parent = MainFrame
+
+grabGunButton.MouseButton1Click:Connect(function()
+    for _, item in pairs(Workspace:GetDescendants()) do
+        if item:IsA("Tool") and item.Name == "Gun" then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = item.Handle.CFrame
+            break
+        end
+    end
+end)
+
+-- ESP for Player Roles
+local function addEsp(player)
+    local highlight = Instance.new("Highlight")
+    highlight.Adornee = player.Character
+    highlight.Parent = player.Character
+
+    local function updateRole()
+        if player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife") then
+            highlight.FillColor = Color3.fromRGB(255, 0, 0)  -- Murderer (Red)
+        elseif player.Backpack:FindFirstChild("Gun") or player.Character:FindFirstChild("Gun") then
+            highlight.FillColor = Color3.fromRGB(0, 0, 255)  -- Sheriff (Blue)
+        else
+            highlight.FillColor = Color3.fromRGB(0, 255, 0)  -- Innocent (Green)
+        end
+    end
+
+    player.CharacterAdded:Connect(function()
+        wait(1)
+        highlight.Adornee = player.Character
+        updateRole()
+    end)
+
+    updateRole()
+end
+
+for _, player in pairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+        addEsp(player)
+    end
+end
+
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        addEsp(player)
+    end)
+end)
+
+-- Silent Aim Functionality
+local function onShoot()
+    if silentAimEnabled then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character and (player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife")) then
+                local murderPosition = player.Character.HumanoidRootPart.Position
+                local bullet = LocalPlayer.Character:FindFirstChild("Gun").Handle.Bullet
+                if bullet then
+                    bullet.CFrame = CFrame.new(bullet.Position, murderPosition)
+                    break
+                end
+            end
+        end
+    end
+end
+
+-- Connect the shoot function to tool activation
+local function connectGun()
+    local gun = LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun")
+    if gun then
+        gun.Activated:Connect(onShoot)
+    end
+end
+
+LocalPlayer.Backpack.ChildAdded:Connect(connectGun)
+LocalPlayer.Character.ChildAdded:Connect(connectGun)
+
+print("Vanxell Hub Loaded!")
