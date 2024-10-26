@@ -90,7 +90,6 @@ CreateToggleButton("Toggle Auto Candy", function()
     autoCandy = not autoCandy
     if autoCandy then
         -- Implement candy collection code here
-        -- Sample: Teleport to candies and collect them
     end
 end)
 
@@ -106,10 +105,35 @@ end)
 
 -- Auto Shoot Button for Sheriff
 local autoShoot = false
-CreateToggleButton("Toggle Auto Shoot", function()
+local AutoShootButton = Instance.new("TextButton")
+AutoShootButton.Text = "Auto Shoot"
+AutoShootButton.Size = UDim2.new(0, 80, 0, 30)
+AutoShootButton.Position = UDim2.new(1, 10, 0.5, -15)
+AutoShootButton.AnchorPoint = Vector2.new(0, 0.5)
+AutoShootButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+AutoShootButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoShootButton.Parent = VanxellHub
+AutoShootButton.MouseButton1Click:Connect(function()
     autoShoot = not autoShoot
     if autoShoot then
-        -- Implement auto shoot code here
+        -- Implement auto shoot targeting code for sheriff here
+    end
+end)
+
+-- Grab Gun Feature
+local grabGunEnabled = false
+local GrabGunButton = Instance.new("TextButton")
+GrabGunButton.Text = "Grab Gun"
+GrabGunButton.Size = UDim2.new(0, 80, 0, 30)
+GrabGunButton.Position = UDim2.new(1, 10, 0.6, -15)
+GrabGunButton.AnchorPoint = Vector2.new(0, 0.5)
+GrabGunButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
+GrabGunButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+GrabGunButton.Parent = VanxellHub
+GrabGunButton.MouseButton1Click:Connect(function()
+    grabGunEnabled = not grabGunEnabled
+    if grabGunEnabled then
+        -- Implement gun grabbing code here
     end
 end)
 
