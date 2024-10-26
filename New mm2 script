@@ -2,9 +2,6 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Workspace = game:GetService("Workspace")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
--- ScreenGui setup
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "VanxellHub"
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
@@ -15,7 +12,7 @@ MainFrame.Size = UDim2.new(0, 300, 0, 400)
 MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)  -- Centered position
 MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 MainFrame.BorderColor3 = Color3.fromRGB(0, 255, 0)
-MainFrame.Visible = false  -- Set to false initially
+MainFrame.Visible = true  -- Set to true initially
 MainFrame.Parent = ScreenGui
 
 -- Title
@@ -27,86 +24,6 @@ Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 Title.BorderColor3 = Color3.fromRGB(0, 255, 0)
 Title.Parent = MainFrame
-
--- GUI Toggle Button positioned on the left side of the screen
-local toggleGuiButton = Instance.new("TextButton")
-toggleGuiButton.Size = UDim2.new(0, 80, 0, 30)
-toggleGuiButton.Position = UDim2.new(0, 10, 0.5, -15)  -- Positioned on the left side
-toggleGuiButton.Text = "Toggle GUI"
-toggleGuiButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-toggleGuiButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
-toggleGuiButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleGuiButton.Parent = ScreenGui
-
-toggleGuiButton.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible  -- Toggle visibility
-end)
-
--- Function to add ESP
-local function addEsp(player)
-    if player.Character then
-        local highlight = Instance.new("Highlight")
-        highlight.Adornee = player.Character
-        highlight.Parent = player.Character
-
-        local function updateRole()
-            if player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife") then
-                highlight.FillColor = Color3.fromRGB(255, 0, 0)  -- Murderer (Red)
-            elseif player.Backpack:FindFirstChild("Gun") or player.Character:FindFirstChild("Gun") then
-                highlight.FillColor = Color3.fromRGB(0, 0, 255)  -- Sheriff (Blue)
-            else
-                highlight.FillColor = Color3.fromRGB(0, 255, 0)  -- Innocent (Green)
-            end
-        end
-
-        -- Update highlight when character is added or updated
-        player.CharacterAdded:Connect(function(character)
-            highlight.Adornee = character  -- Update highlight to new character
-            updateRole()  -- Update role on character addition
-        end)
-
-        -- Connect to Backpack changes for the player
-        player.Backpack.ChildAdded:Connect(updateRole)
-        player.Character.DescendantAdded:Connect(updateRole)
-
-        updateRole()  -- Initial role update
-    end
-end
-
--- Initial ESP for existing players
-for _, player in pairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer then
-        addEsp(player)
-    end
-end
-
--- ESP for new players
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function(character)
-        wait(1)  -- Wait for the character to fully load
-        addEsp(player)
-    end)
-end)
-
--- Function to repeat ESP when the round ends
-local function onRoundEnd()
-    wait(3)  -- Adjust wait time as necessary for the game
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            if player.Character then
-                local highlight = player.Character:FindFirstChildOfClass("Highlight")
-                if highlight then
-                    highlight:Destroy()  -- Remove existing highlight
-                end
-            end
-            addEsp(player)  -- Re-add ESP for each player
-        end
-    end
-end
-
--- Connect to round end event (you need to define what triggers a round end in your game)
--- Assuming there is an event or function you can call to know when a round ends
-ReplicatedStorage.RoundEnded.Event:Connect(onRoundEnd) -- Replace with the actual event that signals round end
 
 -- Grab Gun Button
 local grabGunButton = Instance.new("TextButton")
@@ -148,17 +65,6 @@ grabGunButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Silent Shooting Functionality
-local function onSilentShoot()
-    if LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun") then
-        -- Replace this with the code to enable silent shooting
-        print("Silent shooting is enabled.")
-        -- Your shooting logic here
-    else
-        print("You need to grab the gun first.")
-    end
-end
-
 -- Silent Shoot Button
 local silentShootButton = Instance.new("TextButton")
 silentShootButton.Size = UDim2.new(1, -20, 0, 30)
@@ -169,32 +75,27 @@ silentShootButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
 silentShootButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 silentShootButton.Parent = MainFrame
 
-silentShootButton.MouseButton1Click:Connect(onSilentShoot)
-
--- Kill All Button
-local killAllButton = Instance.new("TextButton")
-killAllButton.Size = UDim2.new(1, -20, 0, 30)
-killAllButton.Position = UDim2.new(0, 10, 0, 130)
-killAllButton.Text = "Kill All"
-killAllButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-killAllButton.BorderColor3 = Color3.fromRGB(255, 255, 0)
-killAllButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-killAllButton.Parent = MainFrame
-
-killAllButton.MouseButton1Click:Connect(function()
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
-            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid.Health = 0  -- Set health to 0 to kill the player
-                print(player.Name .. " has been killed.")
-            end
-        end
+silentShootButton.MouseButton1Click:Connect(function()
+    if LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun") then
+        -- Silent shooting logic here
+        print("Silent shooting is enabled.")
+        -- Your shooting logic to hit the murderer without alerting them
+    else
+        print("You need to grab the gun first.")
     end
 end)
 
--- Auto Candy Feature (if applicable)
-local function autoCandy()
+-- Auto Farm Button
+local autoFarmButton = Instance.new("TextButton")
+autoFarmButton.Size = UDim2.new(1, -20, 0, 30)
+autoFarmButton.Position = UDim2.new(0, 10, 0, 130)
+autoFarmButton.Text = "Auto Farm"
+autoFarmButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+autoFarmButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
+autoFarmButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoFarmButton.Parent = MainFrame
+
+autoFarmButton.MouseButton1Click:Connect(function()
     while wait(1) do  -- Adjust the wait time as necessary
         for _, item in pairs(Workspace:GetChildren()) do
             if item:IsA("Tool") and item.Name == "Candy" then
@@ -203,9 +104,6 @@ local function autoCandy()
             end
         end
     end
-end
+end)
 
--- Start Auto Candy (optional)
--- autoCandy()  -- Uncomment to enable
-
---
+-- This will continue to run until the player clicks the button again or the GUI is closed.
