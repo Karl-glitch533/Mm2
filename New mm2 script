@@ -155,11 +155,14 @@ killAllButton.MouseButton1Click:Connect(function()
 end)
 
 -- ESP for Player Roles
+local highlights = {}  -- To keep track of ESP highlights
+
 local function addEsp(player)
     if player.Character then
         local highlight = Instance.new("Highlight")
         highlight.Adornee = player.Character
         highlight.Parent = player.Character
+        highlights[player.UserId] = highlight  -- Store the highlight by user ID
 
         local function updateRole()
             if player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife") then
@@ -185,19 +188,14 @@ local function addEsp(player)
     end
 end
 
--- Initial ESP for existing players
-for _, player in pairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer then
-        addEsp(player)
+-- Function to reset ESP for all players
+local function resetEsp()
+    for _, highlight in pairs(highlights) do
+        highlight:Destroy()  -- Remove existing highlights
     end
+    highlights = {}  -- Clear the stored highlights
 end
 
--- ESP for new players
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function(character)
-        wait(1)  -- Wait for the character to fully load
-        addEsp(player)
-    end)
-end)
-
-print("Vanxell Hub Loaded!")
+-- Initial ESP for existing players
+for _, player in pairs(Players:GetPlayers()) do
+    if player ~= Local
