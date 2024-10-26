@@ -1,4 +1,4 @@
--- Vanxell Hub for Murder Mystery 2 Candy Collector and Auto Shoot
+-- Vanxell Hub for Murder Mystery 2 Auto Collect Candy
 -- WARNING: Use this script at your own risk.
 
 local VanxellHub = Instance.new("ScreenGui")
@@ -6,14 +6,13 @@ VanxellHub.Name = "VanxellHub"
 VanxellHub.Parent = game.CoreGui
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 300, 0, 250)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -125)
+MainFrame.Size = UDim2.new(0, 400, 0, 300)
+MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
 MainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-MainFrame.Visible = false -- Start with GUI hidden
 MainFrame.Parent = VanxellHub
 
 local Title = Instance.new("TextLabel")
-Title.Text = "Vanxell Hub - Candy Collector"
+Title.Text = "Vanxell Hub - MM2"
 Title.Size = UDim2.new(1, 0, 0, 50)
 Title.Position = UDim2.new(0, 0, 0, 0)
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -21,144 +20,86 @@ Title.BackgroundTransparency = 1
 Title.TextScaled = true
 Title.Parent = MainFrame
 
--- Function to create toggle buttons for features
-local function CreateToggleButton(name)
+local isCollecting = false
+
+-- Function to create buttons
+local function CreateButton(name, callback, position)
     local Button = Instance.new("TextButton")
     Button.Text = name
     Button.Size = UDim2.new(0.9, 0, 0, 40)
-    Button.Position = UDim2.new(0.05, 0, #MainFrame:GetChildren() * 0.12 + 0.1, 0)
+    Button.Position = position
     Button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     Button.TextColor3 = Color3.fromRGB(255, 255, 255)
     Button.Parent = MainFrame
-    return Button
+    Button.MouseButton1Click:Connect(callback)
 end
 
--- Auto Collect Candy Feature
-local autoCollect = false
-local candyCollectButton = CreateToggleButton("Toggle Auto Collect Candy")
-candyCollectButton.MouseButton1Click:Connect(function()
-    autoCollect = not autoCollect
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoid = character:WaitForChild("Humanoid")
+-- Auto Candy Feature
+CreateButton("Toggle Auto Candy", function()
+    isCollecting = not isCollecting
+    if isCollecting then
+        Button.Text = "Auto Candy: ON"
+        -- Teleport to candy and collect
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
 
-    if autoCollect then
-        candyCollectButton.Text = "Auto Collect: ON"
-        humanoid.Sit = true -- Lay down
-
-        while autoCollect do
-            -- Find all candies in the game
-            local candies = workspace:GetChildren()
-            for _, item in pairs(candies) do
-                if item:IsA("Part") and item.Name == "Candy" then
-                    local distance = (character.HumanoidRootPart.Position - item.Position).magnitude
-                    
-                    -- Check if candy is on the ground and close enough to collect
-                    if distance < 10 and item.Position.Y >= character.HumanoidRootPart.Position.Y - 3 then
-                        character:SetPrimaryPartCFrame(item.CFrame + Vector3.new(0, 3, 0)) -- Teleport slightly above candy
-                        wait(0.1) -- Small delay before collecting
-                        local clickDetector = item:FindFirstChildOfClass("ClickDetector")
-                        if clickDetector then
-                            fireclickdetector(clickDetector) -- Collect the candy
-                        end
-                    end
+        while isCollecting do
+            for _, candy in pairs(workspace:GetChildren()) do
+                if candy:IsA("Part") and candy.Name == "Candy" then
+                    character.HumanoidRootPart.CFrame = candy.CFrame
+                    wait(0.5) -- Adjust timing as needed
                 end
             end
-            wait(0.5) -- Delay between checks
+            wait(1) -- Wait before next scan for candies
         end
-
-        humanoid.Sit = false -- Stand up when done
     else
-        candyCollectButton.Text = "Auto Collect: OFF"
-        humanoid.Sit = false -- Stand up when toggled off
+        Button.Text = "Auto Candy: OFF"
     end
-end)
+end, UDim2.new(0.05, 0, 0.1, 0))
 
 -- Reset Button
-local resetButton = CreateToggleButton("Reset Character")
-resetButton.MouseButton1Click:Connect(function()
+CreateButton("Reset Character", function()
     local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    
-    -- Reset character (can also use player:LoadCharacter() for a respawn)
-    character:BreakJoints()
-end)
+    player.Character:BreakJoints() -- This will reset the character
+end, UDim2.new(0.05, 0, 0.2, 0))
 
--- Auto Shoot Button for Sheriff
-local autoShootButton = CreateToggleButton("Toggle Auto Shoot")
-local shooting = false
-autoShootButton.MouseButton1Click:Connect(function()
-    shooting = not shooting
-    autoShootButton.Text = shooting and "Auto Shoot: ON" or "Auto Shoot: OFF"
-    
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
+-- Auto Shoot Button (for Sheriff)
+local isShooting = false
+CreateButton("Toggle Auto Shoot", function()
+    isShooting = not isShooting
+    if isShooting then
+        Button.Text = "Auto Shoot: ON"
+        local player = game.Players.LocalPlayer
 
-    while shooting do
-        wait(0.1)
-        -- Check if the player is the sheriff
-        if player:FindFirstChild("Role") and player.Role.Value == "Sheriff" then
-            -- Find the murderer
-            for _, v in pairs(game.Players:GetPlayers()) do
-                if v ~= player and v:FindFirstChild("Role") and v.Role.Value == "Murderer" then
-                    -- Check if the murderer is in range
-                    local distance = (character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).magnitude
-                    if distance < 50 then -- Adjust this distance as needed
-                        character:SetPrimaryPartCFrame(v.HumanoidRootPart.CFrame) -- Face the murderer
-                        wait(0.1) -- Wait briefly before shooting
-                        -- Trigger shooting (this will depend on your game's setup)
-                        local tool = character:FindFirstChildOfClass("Tool")
-                        if tool then
-                            tool:Activate() -- Fire the weapon
+        while isShooting do
+            if player and player.Character then
+                -- Check for murderers in your view
+                for _, enemy in pairs(workspace:GetChildren()) do
+                    if enemy:IsA("Model") and enemy:FindFirstChild("Humanoid") and enemy:FindFirstChild("Player") then
+                        -- Assuming murderer has a specific tag or name, adjust this logic
+                        if enemy.Player.Value == "Murderer" then
+                            player.Character:FindFirstChildOfClass("Tool").Activated:Fire()
                         end
-                        break
                     end
                 end
             end
+            wait(1) -- Adjust as needed
         end
+    else
+        Button.Text = "Auto Shoot: OFF"
     end
-end)
-
--- Visual Indicator
-local roleIndicator = Instance.new("TextLabel")
-roleIndicator.Size = UDim2.new(0, 150, 0, 50)
-roleIndicator.Position = UDim2.new(0.5, -75, 0.95, 0)
-roleIndicator.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-roleIndicator.TextColor3 = Color3.fromRGB(0, 0, 0)
-roleIndicator.TextScaled = true
-roleIndicator.Parent = VanxellHub
-
--- Update role indicator
-game.Players.LocalPlayer:GetPropertyChangedSignal("Role"):Connect(function()
-    if game.Players.LocalPlayer:FindFirstChild("Role") then
-        roleIndicator.Text = "You are: " .. game.Players.LocalPlayer.Role.Value
-    end
-end)
+end, UDim2.new(0.05, 0, 0.3, 0))
 
 -- Exit Button
 local ExitButton = Instance.new("TextButton")
 ExitButton.Text = "Exit"
 ExitButton.Size = UDim2.new(0.9, 0, 0, 40)
-ExitButton.Position = UDim2.new(0.05, 0, 0.85, 0)
+ExitButton.Position = UDim2.new(0.05, 0, 0.8, 0)
 ExitButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
 ExitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ExitButton.Parent = MainFrame
 ExitButton.MouseButton1Click:Connect(function()
     VanxellHub:Destroy()
-end)
-
--- Close/Open GUI Button
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Text = "Open Hub"
-ToggleButton.Size = UDim2.new(0.1, 0, 0.05, 0)
-ToggleButton.Position = UDim2.new(0.01, 0, 0.01, 0)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.Parent = VanxellHub
-
-ToggleButton.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible
-    ToggleButton.Text = MainFrame.Visible and "Close Hub" or "Open Hub"
 end)
 
 -- Draggable UI Function
