@@ -1,145 +1,126 @@
 -- Vanxell Hub for Murder Mystery 2
--- Auto Collect Candy, Identify Murderer/Sheriff, Auto-Shoot, Grab Gun
--- Created by [Your Name or Team]
 
-local Player = game.Players.LocalPlayer
-local PlayerGui = Player:WaitForChild("PlayerGui")
+-- Loading Screen
+local LoadingGui = Instance.new("ScreenGui")
+LoadingGui.Name = "LoadingGui"
+LoadingGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- Create GUI
-local VanxellHub = Instance.new("ScreenGui", PlayerGui)
+local LoadingFrame = Instance.new("Frame")
+LoadingFrame.Size = UDim2.new(0, 400, 0, 150)
+LoadingFrame.Position = UDim2.new(0.5, -200, 0.5, -75)
+LoadingFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+LoadingFrame.BorderSizePixel = 0
+LoadingFrame.Parent = LoadingGui
+
+local LoadingText = Instance.new("TextLabel")
+LoadingText.Text = "Loading Vanxell Hub"
+LoadingText.Font = Enum.Font.SourceSansBold
+LoadingText.Size = UDim2.new(1, 0, 1, -20)
+LoadingText.Position = UDim2.new(0, 0, 0, 0)
+LoadingText.TextColor3 = Color3.fromRGB(255, 255, 255)
+LoadingText.BackgroundTransparency = 1
+LoadingText.TextScaled = true
+LoadingText.Parent = LoadingFrame
+
+-- Loading Animation
+local dotCount = 0
+spawn(function()
+    while wait(0.5) do
+        dotCount = (dotCount + 1) % 4
+        LoadingText.Text = "Loading Vanxell Hub" .. string.rep(".", dotCount)
+    end
+end)
+
+-- Remove loading screen after delay
+wait(3)
+LoadingGui:Destroy()
+
+-- Main GUI Setup
+local VanxellHub = Instance.new("ScreenGui")
 VanxellHub.Name = "VanxellHub"
-local MainFrame = Instance.new("Frame", VanxellHub)
+VanxellHub.Parent = game.CoreGui
+
+local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 400, 0, 300)
 MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
 MainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-MainFrame.Name = "MainFrame"
+MainFrame.Parent = VanxellHub
 
-local Title = Instance.new("TextLabel", MainFrame)
+local Title = Instance.new("TextLabel")
+Title.Text = "Vanxell Hub - Murder Mystery 2"
 Title.Size = UDim2.new(1, 0, 0, 50)
 Title.Position = UDim2.new(0, 0, 0, 0)
-Title.Text = "Vanxell Hub - MM2 Features"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.BackgroundTransparency = 1
 Title.TextScaled = true
+Title.Parent = MainFrame
 
--- Buttons
-local AutoCandyButton = Instance.new("TextButton", MainFrame)
-AutoCandyButton.Size = UDim2.new(0.9, 0, 0, 40)
-AutoCandyButton.Position = UDim2.new(0.05, 0, 0.2, 0)
-AutoCandyButton.Text = "Toggle Auto Candy"
-AutoCandyButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-AutoCandyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-local IdentifyButton = Instance.new("TextButton", MainFrame)
-IdentifyButton.Size = UDim2.new(0.9, 0, 0, 40)
-IdentifyButton.Position = UDim2.new(0.05, 0, 0.35, 0)
-IdentifyButton.Text = "Identify Murderer/Sheriff"
-IdentifyButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-IdentifyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-local AutoShootButton = Instance.new("TextButton", MainFrame)
-AutoShootButton.Size = UDim2.new(0.9, 0, 0, 40)
-AutoShootButton.Position = UDim2.new(0.05, 0, 0.5, 0)
-AutoShootButton.Text = "Toggle Auto-Shoot"
-AutoShootButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-AutoShootButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-local GrabGunButton = Instance.new("TextButton", MainFrame)
-GrabGunButton.Size = UDim2.new(0.9, 0, 0, 40)
-GrabGunButton.Position = UDim2.new(0.05, 0, 0.65, 0)
-GrabGunButton.Text = "Grab Gun"
-GrabGunButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-GrabGunButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-local CloseButton = Instance.new("TextButton", MainFrame)
-CloseButton.Size = UDim2.new(0.9, 0, 0, 40)
-CloseButton.Position = UDim2.new(0.05, 0, 0.8, 0)
-CloseButton.Text = "Close GUI"
-CloseButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
-CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-
--- Functions
-local AutoCandy = false
-AutoCandyButton.MouseButton1Click:Connect(function()
-    AutoCandy = not AutoCandy
-    AutoCandyButton.Text = AutoCandy and "Auto Candy: ON" or "Auto Candy: OFF"
-    if AutoCandy then
-        while AutoCandy do
-            for _, candy in pairs(workspace:GetChildren()) do
-                if candy:IsA("Part") and candy.Name == "Candy" then
-                    Player.Character.HumanoidRootPart.CFrame = candy.CFrame
-                    wait(0.1) -- Adjust delay as needed
-                end
-            end
-            wait(0.5) -- Adjust as needed
-        end
+-- Toggle Open/Close GUI Button
+local OpenCloseButton = Instance.new("TextButton")
+OpenCloseButton.Text = "Close GUI"
+OpenCloseButton.Size = UDim2.new(0, 100, 0, 30)
+OpenCloseButton.Position = UDim2.new(0, 10, 0, 10)
+OpenCloseButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+OpenCloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+OpenCloseButton.Parent = MainFrame
+OpenCloseButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+    if MainFrame.Visible then
+        OpenCloseButton.Text = "Close GUI"
+    else
+        OpenCloseButton.Text = "Open GUI"
     end
 end)
 
-local function identifyRoles()
-    for _, player in pairs(game.Players:GetPlayers()) do
-        local role = player.Backpack:FindFirstChild("Knife") and "Murderer" or (player.Backpack:FindFirstChild("Gun") and "Sheriff" or nil)
-        if role then
-            local highlight = Instance.new("BillboardGui", player.Character)
-            highlight.Adornee = player.Character:FindFirstChild("Head")
-            highlight.Size = UDim2.new(0, 50, 0, 50)
-            highlight.StudsOffset = Vector3.new(0, 2, 0)
-            local label = Instance.new("TextLabel", highlight)
-            label.Size = UDim2.new(1, 0, 1, 0)
-            label.BackgroundTransparency = 1
-            label.Text = role == "Murderer" and "🔴" or "🔵"
-            label.TextColor3 = role == "Murderer" and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(0, 0, 255)
-            label.TextScaled = true
-        end
-    end
+-- Function to create toggle buttons
+local function CreateToggleButton(name, callback)
+    local Button = Instance.new("TextButton")
+    Button.Text = name
+    Button.Size = UDim2.new(0.9, 0, 0, 40)
+    Button.Position = UDim2.new(0.05, 0, #MainFrame:GetChildren() * 0.12, 0)
+    Button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Button.Parent = MainFrame
+    Button.MouseButton1Click:Connect(callback)
 end
-IdentifyButton.MouseButton1Click:Connect(identifyRoles)
 
-local AutoShoot = false
-AutoShootButton.MouseButton1Click:Connect(function()
-    AutoShoot = not AutoShoot
-    AutoShootButton.Text = AutoShoot and "Auto-Shoot: ON" or "Auto-Shoot: OFF"
-    if AutoShoot and Player.Backpack:FindFirstChild("Gun") then
-        local gun = Player.Backpack:FindFirstChild("Gun")
-        local murderer
-        for _, plr in pairs(game.Players:GetPlayers()) do
-            if plr.Backpack:FindFirstChild("Knife") then
-                murderer = plr
-                break
-            end
-        end
-        if murderer then
-            while AutoShoot and gun do
-                gun.Parent = Player.Character
-                Player.Character.HumanoidRootPart.CFrame = murderer.Character.HumanoidRootPart.CFrame
-                gun:Activate()
-                wait(0.1)
-            end
-        end
+-- Auto Collect Candy
+local autoCandy = false
+CreateToggleButton("Toggle Auto Candy", function()
+    autoCandy = not autoCandy
+    if autoCandy then
+        -- Implement candy collection code here
+        -- Sample: Teleport to candies and collect them
     end
 end)
 
-GrabGunButton.MouseButton1Click:Connect(function()
-    for _, item in pairs(workspace:GetChildren()) do
-        if item:IsA("Tool") and item.Name == "Gun" then
-            Player.Character.HumanoidRootPart.CFrame = item.Handle.CFrame
-            break
-        end
+-- Highlight Murderer and Sheriff
+local highlightEnabled = false
+CreateToggleButton("Identify Murderer/Sheriff", function()
+    highlightEnabled = not highlightEnabled
+    if highlightEnabled then
+        -- Implement visual identification code here
+        -- Example: Add red/blue highlights on murderer/sheriff
     end
 end)
 
-CloseButton.MouseButton1Click:Connect(function()
-    VanxellHub.Enabled = false
+-- Auto Shoot Button for Sheriff
+local autoShoot = false
+CreateToggleButton("Toggle Auto Shoot", function()
+    autoShoot = not autoShoot
+    if autoShoot then
+        -- Implement auto shoot code here
+    end
 end)
 
--- GUI Toggle Button
-local OpenGuiButton = Instance.new("TextButton", PlayerGui)
-OpenGuiButton.Size = UDim2.new(0.1, 0, 0.05, 0)
-OpenGuiButton.Position = UDim2.new(0, 0, 0.9, 0)
-OpenGuiButton.Text = "Open GUI"
-OpenGuiButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-OpenGuiButton.TextColor3 = Color3.fromRGB(0, 0, 0)
-
-OpenGuiButton.MouseButton1Click:Connect(function()
-    VanxellHub.Enabled = true
+-- Reset Button
+local ResetButton = Instance.new("TextButton")
+ResetButton.Text = "Reset"
+ResetButton.Size = UDim2.new(0.9, 0, 0, 40)
+ResetButton.Position = UDim2.new(0.05, 0, 0.9, 0)
+ResetButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+ResetButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ResetButton.Parent = MainFrame
+ResetButton.MouseButton1Click:Connect(function()
+    game.Players.LocalPlayer.Character:BreakJoints() -- Reset character
 end)
