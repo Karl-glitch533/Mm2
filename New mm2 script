@@ -8,7 +8,6 @@ local LocalPlayer = Players.LocalPlayer
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "VanxellHub"
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-ScreenGui.Enabled = true  -- GUI toggling
 
 -- Main Frame for Hub
 local MainFrame = Instance.new("Frame")
@@ -16,7 +15,7 @@ MainFrame.Size = UDim2.new(0, 300, 0, 400)
 MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
 MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 MainFrame.BorderColor3 = Color3.fromRGB(0, 255, 0)
-MainFrame.Visible = true  -- Default visibility
+MainFrame.Visible = false  -- Set to false initially
 MainFrame.Parent = ScreenGui
 
 -- Title
@@ -30,7 +29,6 @@ Title.BorderColor3 = Color3.fromRGB(0, 255, 0)
 Title.Parent = MainFrame
 
 -- GUI Toggle Button positioned on the left side of the screen
-local guiEnabled = true
 local toggleGuiButton = Instance.new("TextButton")
 toggleGuiButton.Size = UDim2.new(0, 80, 0, 30)
 toggleGuiButton.Position = UDim2.new(0, 10, 0.5, -15)  -- Positioned on the left side
@@ -41,8 +39,7 @@ toggleGuiButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 toggleGuiButton.Parent = ScreenGui
 
 toggleGuiButton.MouseButton1Click:Connect(function()
-    guiEnabled = not guiEnabled
-    MainFrame.Visible = guiEnabled
+    MainFrame.Visible = not MainFrame.Visible  -- Toggle visibility
 end)
 
 -- Silent Aim Button
@@ -193,4 +190,6 @@ for _, player in pairs(Players:GetPlayers()) do
 end
 
 -- ESP for new players
-Players.Player
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+        wait(1)  -- Wait for the character to fully load
