@@ -43,16 +43,6 @@ toggleGuiButton.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible  -- Toggle visibility
 end)
 
--- Function to check if the sheriff is alive
-local function isSheriffAlive()
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Gun") then
-            return true
-        end
-    end
-    return false
-end
-
 -- Grab Gun Button
 local grabGunButton = Instance.new("TextButton")
 grabGunButton.Size = UDim2.new(1, -20, 0, 30)
@@ -64,15 +54,30 @@ grabGunButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 grabGunButton.Parent = MainFrame
 
 grabGunButton.MouseButton1Click:Connect(function()
-    if not isSheriffAlive() then
+    -- Check if the sheriff is dead
+    local sheriffAlive = false
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Backpack:FindFirstChild("Gun") then
+            sheriffAlive = true
+            break
+        end
+    end
+
+    -- Allow grabbing the gun only if the sheriff is not alive
+    if not sheriffAlive then
+        local gunFound = false
         for _, item in pairs(Workspace:GetDescendants()) do
             if item:IsA("Tool") and item.Name == "Gun" then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = item.Handle.CFrame
                 item.Parent = LocalPlayer.Backpack  -- Move the gun to the player's backpack
+                gunFound = true
                 print("Gun grabbed successfully.")
-                return
+                break
             end
         end
-        print("No gun found in the workspace.")
+        if not gunFound then
+            print("No gun found in the workspace.")
+        end
     else
         print("Sheriff is still alive. You cannot grab the gun.")
     end
@@ -88,11 +93,39 @@ silentShootButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
 silentShootButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 silentShootButton.Parent = MainFrame
 
+local autoShootButton  -- Variable for the auto shoot button
+
 silentShootButton.MouseButton1Click:Connect(function()
     if LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun") then
-        -- Implement silent shooting logic
-        print("Silent shooting is enabled.")
-        -- Your shooting logic to hit the murderer without alerting them
+        -- Create a small button on the right for auto shoot
+        autoShootButton = Instance.new("TextButton")
+        autoShootButton.Size = UDim2.new(0, 100, 0, 30)
+        autoShootButton.Position = UDim2.new(1, -110, 0, 90)  -- Positioned on the right side
+        autoShootButton.Text = "Auto Shoot"
+        autoShootButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        autoShootButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
+        autoShootButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        autoShootButton.Parent = MainFrame
+        
+        -- Auto shoot logic
+        autoShootButton.MouseButton1Click:Connect(function()
+            local gun = LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun")
+            if gun then
+                while wait(0.5) do  -- Adjust wait time as necessary
+                    -- Here you would implement the logic to shoot.
+                    local remote = game.ReplicatedStorage:FindFirstChild("ShootRemote")  -- Adjust this to the correct remote event
+                    if remote then
+                        remote:FireServer(gun)  -- Fires the gun reference
+                        print("Auto shooting...")
+                    else
+                        print("Remote event not found. Cannot execute auto shoot.")
+                        break  -- Break the loop if the remote doesn't exist
+                    end
+                end
+            else
+                print("You need to grab the gun first.")
+            end
+        end)
     else
         print("You need to grab the gun first.")
     end
@@ -109,11 +142,10 @@ autoFarmButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 autoFarmButton.Parent = MainFrame
 
 autoFarmButton.MouseButton1Click:Connect(function()
-    while true do
-        wait(1)  -- Adjust the wait time as necessary
+    while wait(1) do  -- Adjust the wait time as necessary
         for _, item in pairs(Workspace:GetDescendants()) do
             if item:IsA("Tool") and item.Name == "Candy" then
-                item.Parent = LocalPlayer.Backpack  -- Automatically grab candy from the Workspace
+                item.Parent = LocalPlayer.Backpack  -- Automatically grab candy
                 print("Candy grabbed automatically.")
             end
         end
@@ -149,27 +181,14 @@ local function addEsp(player)
     end
 end
 
--- Function to refresh ESP for all players
-local function refreshEsp()
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            addEsp(player)
-        end
+-- Initial ESP for existing players
+for _, player in pairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+        addEsp(player)
     end
 end
-
--- Initial ESP for existing players
-refreshEsp()
 
 -- ESP for new players
 Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function(character)
-        wait(1)  -- Wait for the character to fully load
-        addEsp(player)
-    end)
-end)
-
--- Repeat ESP when the round ends
-game:GetService("ReplicatedStorage").RoundEnded:Connect(function()
-    refreshEsp()  -- Refresh ESP for all players at the start of each round
-end)
+        wait
