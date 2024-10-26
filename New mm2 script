@@ -188,4 +188,9 @@ end
 -- Initial ESP for existing players
 for _, player in pairs(Players:GetPlayers()) do
     if player ~= LocalPlayer and player.Character then
-        addEsp(player
+        addEsp(player)
+    end
+end
+
+-- ESP for new players
+Players.Player
