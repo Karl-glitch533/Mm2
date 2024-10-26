@@ -1,199 +1,168 @@
--- Vanxell Hub for Murder Mystery 2 Auto Collect Candy
--- WARNING: Use this script at your own risk.
+-- Vanxell Hub for Murder Mystery 2
+-- Auto Collect Candy, Identify Murder/Sheriff, Grab Gun, and Auto Shoot
 
-local VanxellHub = Instance.new("ScreenGui")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Create GUI
+local VanxellHub = Instance.new("ScreenGui", playerGui)
 VanxellHub.Name = "VanxellHub"
-VanxellHub.Parent = game.CoreGui
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 400, 0, 300)
-MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
-MainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-MainFrame.Visible = false -- Start hidden
-MainFrame.Parent = VanxellHub
+local MainFrame = Instance.new("Frame", VanxellHub)
+MainFrame.Size = UDim2.new(0, 300, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.BorderSizePixel = 0
 
-local Title = Instance.new("TextLabel")
-Title.Text = "Vanxell Hub - MM2"
+local Title = Instance.new("TextLabel", MainFrame)
 Title.Size = UDim2.new(1, 0, 0, 50)
-Title.Position = UDim2.new(0, 0, 0, 0)
+Title.Text = "Vanxell Hub"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.SourceSansBold
 Title.TextScaled = true
-Title.Parent = MainFrame
 
--- Function to create buttons
-local function CreateButton(name, callback, position)
-    local Button = Instance.new("TextButton")
-    Button.Text = name
-    Button.Size = UDim2.new(0.9, 0, 0, 40)
-    Button.Position = position
-    Button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Button.Parent = MainFrame
-    Button.MouseButton1Click:Connect(callback)
-    return Button
-end
+local closeButton = Instance.new("TextButton", MainFrame)
+closeButton.Size = UDim2.new(0.5, 0, 0, 50)
+closeButton.Position = UDim2.new(0.25, 0, 0.1, 0)
+closeButton.Text = "Close GUI"
+closeButton.TextColor3 = Color3.fromRGB(255, 0, 0)
 
--- Toggle GUI visibility
-local function toggleGUI()
-    MainFrame.Visible = not MainFrame.Visible
-end
+local openButton = Instance.new("TextButton", MainFrame)
+openButton.Size = UDim2.new(0.5, 0, 0, 50)
+openButton.Position = UDim2.new(0.25, 0, 0.1, 0)
+openButton.Text = "Open GUI"
+openButton.TextColor3 = Color3.fromRGB(0, 255, 0)
+MainFrame.Visible = false
 
--- Create a button to toggle the GUI
-local toggleButton = Instance.new("TextButton")
-toggleButton.Text = "Toggle GUI"
-toggleButton.Size = UDim2.new(0.1, 0, 0.1, 0)
-toggleButton.Position = UDim2.new(0.9, 0, 0, 0)
-toggleButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
-toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleButton.Parent = VanxellHub
-toggleButton.MouseButton1Click:Connect(toggleGUI)
+local autoCandyButton = Instance.new("TextButton", MainFrame)
+autoCandyButton.Size = UDim2.new(1, 0, 0, 50)
+autoCandyButton.Position = UDim2.new(0, 0, 0.2, 0)
+autoCandyButton.Text = "Toggle Auto Collect Candy"
+autoCandyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 
--- Auto Candy Feature
-local isCollecting = false
-local candiesCollected = {}
+local resetButton = Instance.new("TextButton", MainFrame)
+resetButton.Size = UDim2.new(1, 0, 0, 50)
+resetButton.Position = UDim2.new(0, 0, 0.3, 0)
+resetButton.Text = "Reset Character"
+resetButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 
-CreateButton("Toggle Auto Candy", function()
-    isCollecting = not isCollecting
-    if isCollecting then
-        toggleButton.Text = "Auto Candy: ON"
-        local player = game.Players.LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
+local identifyButton = Instance.new("TextButton", MainFrame)
+identifyButton.Size = UDim2.new(1, 0, 0, 50)
+identifyButton.Position = UDim2.new(0, 0, 0.4, 0)
+identifyButton.Text = "Identify Murder/Sheriff"
+identifyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 
-        while isCollecting do
-            for _, candy in pairs(workspace:GetChildren()) do
-                if candy:IsA("Part") and candy.Name == "Candy" and not candiesCollected[candy] then
-                    candiesCollected[candy] = true -- Mark candy as collected
-                    character.HumanoidRootPart.CFrame = candy.CFrame -- Teleport to candy
-                    wait(0.5) -- Adjust timing as needed
-                end
+local autoShootButton = Instance.new("TextButton", MainFrame)
+autoShootButton.Size = UDim2.new(1, 0, 0, 50)
+autoShootButton.Position = UDim2.new(0, 0, 0.5, 0)
+autoShootButton.Text = "Auto Shoot Murderer"
+autoShootButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+local grabGunButton = Instance.new("TextButton", MainFrame)
+grabGunButton.Size = UDim2.new(1, 0, 0, 50)
+grabGunButton.Position = UDim2.new(0, 0, 0.6, 0)
+grabGunButton.Text = "Grab Gun"
+grabGunButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+-- Function to close GUI
+closeButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+end)
+
+-- Function to open GUI
+openButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = true
+end)
+
+-- Toggle Auto Collect Candy
+local collectingCandy = false
+autoCandyButton.MouseButton1Click:Connect(function()
+    collectingCandy = not collectingCandy
+    autoCandyButton.Text = collectingCandy and "Auto Collecting Candy: ON" or "Auto Collecting Candy: OFF"
+    
+    while collectingCandy do
+        wait(0.1)
+        for _, candy in pairs(workspace:GetChildren()) do
+            if candy:IsA("Part") and candy.Name == "Candy" then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = candy.CFrame
+                wait(0.1) -- Adjust delay to prevent instant teleporting
             end
-            wait(1) -- Wait before the next scan for candies
         end
-    else
-        toggleButton.Text = "Auto Candy: OFF"
     end
-end, UDim2.new(0.05, 0, 0.1, 0))
+end)
 
--- Reset Button
-CreateButton("Reset Character", function()
-    local player = game.Players.LocalPlayer
-    player.Character:BreakJoints() -- This will reset the character
-end, UDim2.new(0.05, 0, 0.2, 0))
+-- Reset Character
+resetButton.MouseButton1Click:Connect(function()
+    LocalPlayer.Character:BreakJoints()
+end)
 
--- Auto Shoot Button
-local isShooting = false
-local shootButton
-local function createShootButton()
-    if shootButton then return end -- Prevent creating multiple buttons
-    shootButton = Instance.new("TextButton")
-    shootButton.Text = "Auto Shoot"
-    shootButton.Size = UDim2.new(0.1, 0, 0.1, 0)
-    shootButton.Position = UDim2.new(0.9, 0, 0.3, 0) -- Right side of the screen
-    shootButton.BackgroundColor3 = Color3.fromRGB(60, 255, 60)
-    shootButton.TextColor3 = Color3.fromRGB(0, 0, 0)
-    shootButton.Parent = VanxellHub
-    shootButton.MouseButton1Click:Connect(function()
-        local player = game.Players.LocalPlayer
-        if player.Character and player.Character:FindFirstChild("Tool") then
-            local tool = player.Character.Tool
-            isShooting = not isShooting
-            shootButton.Text = isShooting and "Shooting ON" or "Auto Shoot"
-
-            while isShooting do
-                wait(0.5)
-                if player and player.Character then
-                    for _, enemy in pairs(workspace:GetChildren()) do
-                        if enemy:IsA("Model") and enemy:FindFirstChild("Humanoid") and enemy:FindFirstChild("Player") then
-                            -- Check if the enemy is the murderer
-                            if enemy.Player.Value == "Murderer" then
-                                tool.Activated:Fire() -- Simulate the shooting
-                                break
-                            end
-                        end
+-- Identify Murder/Sheriff with Visual Indicators
+identifyButton.MouseButton1Click:Connect(function()
+    -- Clear existing highlights
+    for _, v in pairs(workspace:GetChildren()) do
+        if v:IsA("Player") and v:FindFirstChild("Highlight") then
+            v.Highlight:Destroy()
+        end
+    end
+    
+    local function highlightRole()
+        while wait(1) do
+            for _, v in pairs(Players:GetPlayers()) do
+                if v.Name ~= LocalPlayer.Name and v:FindFirstChild("Player") and v.Player:FindFirstChild("Role") then
+                    local highlight = Instance.new("Highlight", v)
+                    if v.Player.Role.Value == "Murderer" then
+                        highlight.FillColor = Color3.fromRGB(255, 0, 0) -- Red for Murderer
+                        highlight.OutlineColor = Color3.fromRGB(0, 0, 0)
+                    elseif v.Player.Role.Value == "Sheriff" then
+                        highlight.FillColor = Color3.fromRGB(0, 0, 255) -- Blue for Sheriff
+                        highlight.OutlineColor = Color3.fromRGB(0, 0, 0)
+                    else
+                        highlight:Destroy() -- Remove highlight if not a role
                     end
                 end
             end
         end
-    end)
-end
+    end
+    highlightRole()
+end)
 
-CreateButton("Toggle Auto Shoot", function()
-    createShootButton()
-end, UDim2.new(0.05, 0, 0.3, 0))
-
--- Identify Murderer/Sheriff Button
-local function createIdentifyButton()
-    local identifyButton = Instance.new("TextButton")
-    identifyButton.Text = "Identify Murderer/Sheriff"
-    identifyButton.Size = UDim2.new(0.9, 0, 0, 40)
-    identifyButton.Position = UDim2.new(0.05, 0, 0.4, 0)
-    identifyButton.BackgroundColor3 = Color3.fromRGB(255, 255, 60)
-    identifyButton.TextColor3 = Color3.fromRGB(0, 0, 0)
-    identifyButton.Parent = MainFrame
-
-    identifyButton.MouseButton1Click:Connect(function()
-        for _, player in pairs(game.Players:GetPlayers()) do
-            if player.Team == "Murderer" then
-                -- Highlight murderer
-                player.Character.HumanoidRootPart.BrickColor = BrickColor.new("Bright red")
-                player.Character.HumanoidRootPart.Material = Enum.Material.Neon
-            elseif player.Team == "Sheriff" then
-                -- Highlight sheriff
-                player.Character.HumanoidRootPart.BrickColor = BrickColor.new("Bright blue")
-                player.Character.HumanoidRootPart.Material = Enum.Material.Neon
+-- Auto Shoot Murderer
+local shooting = false
+autoShootButton.MouseButton1Click:Connect(function()
+    shooting = not shooting
+    autoShootButton.Text = shooting and "Auto Shoot: ON" or "Auto Shoot: OFF"
+    
+    while shooting do
+        wait(0.1)
+        if LocalPlayer:FindFirstChild("Player") and LocalPlayer.Player:FindFirstChild("Role").Value == "Sheriff" then
+            for _, v in pairs(Players:GetPlayers()) do
+                if v.Name ~= LocalPlayer.Name and v.Player:FindFirstChild("Role").Value == "Murderer" then
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = v.Character.HumanoidRootPart.CFrame
+                    wait(0.1)
+                    Mouse:Click() -- Simulate shooting
+                    break
+                end
             end
         end
-    end)
-end
+    end
+end)
 
-createIdentifyButton()
-
--- Grab Gun Button
-CreateButton("Grab Gun", function()
-    local player = game.Players.LocalPlayer
-    local gun = workspace:FindFirstChild("Gun") -- Change this based on how your game handles guns
+-- Grab Gun
+grabGunButton.MouseButton1Click:Connect(function()
+    local gun = workspace:FindFirstChild("Gun") -- Replace with actual gun name if needed
     if gun then
-        player.Character.HumanoidRootPart.CFrame = gun.CFrame -- Teleport to gun
-        wait(0.5) -- Small delay to simulate grabbing
-        gun:Destroy() -- Remove the gun from the workspace (assuming it's a one-time use)
+        LocalPlayer.Character.HumanoidRootPart.CFrame = gun.CFrame
     else
-        print("Gun not found.")
-    end
-end, UDim2.new(0.05, 0, 0.5, 0))
-
--- Exit Button
-CreateButton("Exit", function()
-    VanxellHub:Destroy()
-end, UDim2.new(0.05, 0, 0.8, 0))
-
--- Draggable UI Function
-local UIS = game:GetService("UserInputService")
-local dragging, dragInput, dragStart, startPos
-
-MainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = MainFrame.Position
-
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
+        warn("Gun not found in the game!")
     end
 end)
 
-MainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then
-        dragInput = input
-    end
-end)
-
-UIS.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
+-- Reset settings when GUI is closed
+closeButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+    collectingCandy = false
+    shooting = false
 end)
