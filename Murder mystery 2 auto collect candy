@@ -6,8 +6,8 @@ VanxellHub.Name = "VanxellHub"
 VanxellHub.Parent = game.CoreGui
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 300, 0, 200)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+MainFrame.Size = UDim2.new(0, 300, 0, 250)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -125)
 MainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 MainFrame.Visible = false -- Start with GUI hidden
 MainFrame.Parent = VanxellHub
@@ -45,21 +45,22 @@ candyCollectButton.MouseButton1Click:Connect(function()
     if autoCollect then
         candyCollectButton.Text = "Auto Collect: ON"
 
-        -- Teleport to candy collection area (change these coordinates)
+        -- Teleport to candy collection area (update these coordinates)
         local candyLocation = Vector3.new(0, 0, 0) -- Set this to the coordinates of the candy area
         character:SetPrimaryPartCFrame(CFrame.new(candyLocation))
 
         humanoid.Sit = true -- Lay down
 
         while autoCollect do
-            for _, candy in pairs(workspace:GetChildren()) do
-                if candy:IsA("Part") and candy.Name == "Candy" then
-                    local distance = (character.HumanoidRootPart.Position - candy.Position).magnitude
+            for _, item in pairs(workspace:GetChildren()) do
+                if item:IsA("Part") and item.Name == "Candy" then
+                    local distance = (character.HumanoidRootPart.Position - item.Position).magnitude
                     if distance < 10 then -- Adjust distance as necessary
                         -- Collect the candy
-                        local clickDetector = candy:FindFirstChildOfClass("ClickDetector")
+                        local clickDetector = item:FindFirstChildOfClass("ClickDetector")
                         if clickDetector then
-                            fireclickdetector(clickDetector)
+                            fireclickdetector(clickDetector) -- Collect the candy
+                            wait(0.1) -- Small delay to avoid rapid collection
                         end
                     end
                 end
@@ -70,20 +71,25 @@ candyCollectButton.MouseButton1Click:Connect(function()
         humanoid.Sit = false -- Stand up when done
     else
         candyCollectButton.Text = "Auto Collect: OFF"
-
-        -- Teleport back to lobby (change these coordinates)
-        local lobbyLocation = Vector3.new(0, 0, 0) -- Set this to the coordinates of the lobby
-        character:SetPrimaryPartCFrame(CFrame.new(lobbyLocation))
-        
         humanoid.Sit = false -- Stand up when toggled off
     end
+end)
+
+-- Reset Button
+local resetButton = CreateToggleButton("Reset Character")
+resetButton.MouseButton1Click:Connect(function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    
+    -- Reset character (can also use player:LoadCharacter() for a respawn)
+    character:BreakJoints()
 end)
 
 -- Exit Button
 local ExitButton = Instance.new("TextButton")
 ExitButton.Text = "Exit"
 ExitButton.Size = UDim2.new(0.9, 0, 0, 40)
-ExitButton.Position = UDim2.new(0.05, 0, 0.8, 0)
+ExitButton.Position = UDim2.new(0.05, 0, 0.85, 0)
 ExitButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
 ExitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ExitButton.Parent = MainFrame
