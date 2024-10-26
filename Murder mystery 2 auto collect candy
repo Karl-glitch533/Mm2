@@ -1,4 +1,4 @@
--- Vanxell Hub for Murder Mystery 2 Candy Collector
+-- Vanxell Hub for Murder Mystery 2 Candy Collector and Auto Shoot
 -- WARNING: Use this script at your own risk.
 
 local VanxellHub = Instance.new("ScreenGui")
@@ -44,7 +44,6 @@ candyCollectButton.MouseButton1Click:Connect(function()
 
     if autoCollect then
         candyCollectButton.Text = "Auto Collect: ON"
-
         humanoid.Sit = true -- Lay down
 
         while autoCollect do
@@ -53,20 +52,19 @@ candyCollectButton.MouseButton1Click:Connect(function()
             for _, item in pairs(candies) do
                 if item:IsA("Part") and item.Name == "Candy" then
                     local distance = (character.HumanoidRootPart.Position - item.Position).magnitude
-                    if distance < 10 then -- Check if within distance to collect candy
-                        -- Collect the candy
+                    
+                    -- Check if candy is on the ground and close enough to collect
+                    if distance < 10 and item.Position.Y >= character.HumanoidRootPart.Position.Y - 3 then
+                        character:SetPrimaryPartCFrame(item.CFrame + Vector3.new(0, 3, 0)) -- Teleport slightly above candy
+                        wait(0.1) -- Small delay before collecting
                         local clickDetector = item:FindFirstChildOfClass("ClickDetector")
                         if clickDetector then
                             fireclickdetector(clickDetector) -- Collect the candy
-                            wait(0.1) -- Small delay to avoid rapid collection
                         end
-                    elseif item.Position.Y >= character.HumanoidRootPart.Position.Y - 3 then
-                        -- Only teleport if the candy is above the character (not falling into void)
-                        character:SetPrimaryPartCFrame(item.CFrame + Vector3.new(0, 3, 0)) -- Teleport to above candy
                     end
                 end
             end
-            wait(0.5) -- Delay between candy checks
+            wait(0.5) -- Delay between checks
         end
 
         humanoid.Sit = false -- Stand up when done
@@ -84,6 +82,57 @@ resetButton.MouseButton1Click:Connect(function()
     
     -- Reset character (can also use player:LoadCharacter() for a respawn)
     character:BreakJoints()
+end)
+
+-- Auto Shoot Button for Sheriff
+local autoShootButton = CreateToggleButton("Toggle Auto Shoot")
+local shooting = false
+autoShootButton.MouseButton1Click:Connect(function()
+    shooting = not shooting
+    autoShootButton.Text = shooting and "Auto Shoot: ON" or "Auto Shoot: OFF"
+    
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    while shooting do
+        wait(0.1)
+        -- Check if the player is the sheriff
+        if player:FindFirstChild("Role") and player.Role.Value == "Sheriff" then
+            -- Find the murderer
+            for _, v in pairs(game.Players:GetPlayers()) do
+                if v ~= player and v:FindFirstChild("Role") and v.Role.Value == "Murderer" then
+                    -- Check if the murderer is in range
+                    local distance = (character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).magnitude
+                    if distance < 50 then -- Adjust this distance as needed
+                        character:SetPrimaryPartCFrame(v.HumanoidRootPart.CFrame) -- Face the murderer
+                        wait(0.1) -- Wait briefly before shooting
+                        -- Trigger shooting (this will depend on your game's setup)
+                        local tool = character:FindFirstChildOfClass("Tool")
+                        if tool then
+                            tool:Activate() -- Fire the weapon
+                        end
+                        break
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- Visual Indicator
+local roleIndicator = Instance.new("TextLabel")
+roleIndicator.Size = UDim2.new(0, 150, 0, 50)
+roleIndicator.Position = UDim2.new(0.5, -75, 0.95, 0)
+roleIndicator.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+roleIndicator.TextColor3 = Color3.fromRGB(0, 0, 0)
+roleIndicator.TextScaled = true
+roleIndicator.Parent = VanxellHub
+
+-- Update role indicator
+game.Players.LocalPlayer:GetPropertyChangedSignal("Role"):Connect(function()
+    if game.Players.LocalPlayer:FindFirstChild("Role") then
+        roleIndicator.Text = "You are: " .. game.Players.LocalPlayer.Role.Value
+    end
 end)
 
 -- Exit Button
