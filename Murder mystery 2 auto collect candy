@@ -56,7 +56,6 @@ CreateButton("Grab Gun", function()
             local gun = v.Gun:Clone()
             gun.Parent = character
             gun.Position = character.PrimaryPart.Position
-            -- Add additional code to equip the gun if needed
             print("Gun grabbed from dead sheriff.")
             return
         end
@@ -84,8 +83,6 @@ CreateButton("Toggle Auto Shoot", function()
                 local player = game.Players.LocalPlayer
                 if player.Character then
                     -- Code to automatically shoot at the murderer goes here
-                    print("Auto shoot activated on murderer.")
-                    -- Example shooting function (assuming you have an aiming and shooting mechanism):
                     local murderer = nil -- Find the murderer here
                     for _, p in pairs(game.Players:GetPlayers()) do
                         if p.Team == game.Teams.Murderers then
@@ -108,8 +105,8 @@ CreateButton("Toggle Auto Shoot", function()
     end
 end, MainFrame, UDim2.new(0.05, 0, 0.3, 0))
 
--- Identify Players Feature
-local function identifyPlayers()
+-- ESP Players Feature
+local function ESPPlayers()
     for _, player in pairs(game.Players:GetPlayers()) do
         if player ~= game.Players.LocalPlayer then
             local highlight = Instance.new("Highlight")
@@ -126,8 +123,8 @@ local function identifyPlayers()
     end
 end
 
-CreateButton("Identify Players", function()
-    identifyPlayers()
+CreateButton("ESP Players", function()
+    ESPPlayers()
 end, MainFrame, UDim2.new(0.05, 0, 0.4, 0))
 
 -- Open/Close GUI Button
@@ -186,8 +183,9 @@ game:GetService("RunService").RenderStepped:Connect(function()
                 end
             end
             if murderer then
-                -- Shooting logic here, replace this with the actual shooting method
+                -- Replace this with the actual shooting method
                 print("Auto shooting at murderer!")
+                -- Add shooting logic here
             end
         end
     end
