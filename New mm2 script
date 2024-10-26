@@ -2,6 +2,8 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Workspace = game:GetService("Workspace")
+
+-- ScreenGui setup
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "VanxellHub"
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
@@ -12,7 +14,7 @@ MainFrame.Size = UDim2.new(0, 300, 0, 400)
 MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)  -- Centered position
 MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 MainFrame.BorderColor3 = Color3.fromRGB(0, 255, 0)
-MainFrame.Visible = true  -- Set to true initially
+MainFrame.Visible = false  -- Set to false initially
 MainFrame.Parent = ScreenGui
 
 -- Title
@@ -24,6 +26,20 @@ Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 Title.BorderColor3 = Color3.fromRGB(0, 255, 0)
 Title.Parent = MainFrame
+
+-- GUI Toggle Button positioned on the left side of the screen
+local toggleGuiButton = Instance.new("TextButton")
+toggleGuiButton.Size = UDim2.new(0, 80, 0, 30)
+toggleGuiButton.Position = UDim2.new(0, 10, 0.5, -15)  -- Positioned on the left side
+toggleGuiButton.Text = "Toggle GUI"
+toggleGuiButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+toggleGuiButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
+toggleGuiButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleGuiButton.Parent = ScreenGui
+
+toggleGuiButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible  -- Toggle visibility
+end)
 
 -- Grab Gun Button
 local grabGunButton = Instance.new("TextButton")
@@ -106,4 +122,55 @@ autoFarmButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- This will continue to run until the player clicks the button again or the GUI is closed.
+-- ESP Functionality
+local function addEsp(player)
+    if player.Character then
+        local highlight = Instance.new("Highlight")
+        highlight.Adornee = player.Character
+        highlight.Parent = player.Character
+
+        local function updateRole()
+            if player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife") then
+                highlight.FillColor = Color3.fromRGB(255, 0, 0)  -- Murderer (Red)
+            elseif player.Backpack:FindFirstChild("Gun") or player.Character:FindFirstChild("Gun") then
+                highlight.FillColor = Color3.fromRGB(0, 0, 255)  -- Sheriff (Blue)
+            else
+                highlight.FillColor = Color3.fromRGB(0, 255, 0)  -- Innocent (Green)
+            end
+        end
+
+        player.CharacterAdded:Connect(function(character)
+            highlight.Adornee = character  -- Update highlight to new character
+            updateRole()  -- Update role on character addition
+        end)
+
+        player.Backpack.ChildAdded:Connect(updateRole)
+        player.Character.DescendantAdded:Connect(updateRole)
+
+        updateRole()  -- Initial role update
+    end
+end
+
+-- Initial ESP for existing players
+for _, player in pairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+        addEsp(player)
+    end
+end
+
+-- ESP for new players
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+        wait(1)  -- Wait for the character to fully load
+        addEsp(player)
+    end)
+end)
+
+-- Repeat ESP when the round ends
+game:GetService("ReplicatedStorage").RoundEnded:Connect(function()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            addEsp(player)
+        end
+    end
+end)
