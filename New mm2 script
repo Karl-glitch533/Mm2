@@ -99,6 +99,7 @@ createButton("Toggle Auto Candy", UDim2.new(0, 10, 0, 130), function()
             if nearestCandy then
                 LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(nearestCandy.Position)
                 wait(1) -- Wait to collect the candy
+                print("Collected candy.")
             else
                 print("No candy found nearby.")
             end
@@ -131,12 +132,16 @@ local function createESP(player)
         esp.AlwaysOnTop = true
         esp.ZIndex = 10
         esp.Parent = player.Character.HumanoidRootPart
+        print("ESP created for " .. player.Name)
+    else
+        print("Failed to create ESP for " .. player.Name)
     end
 end
 
 -- Listen for players joining
 Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function()
+        wait(1) -- Ensure the character is fully loaded
         createESP(player)
     end)
 end)
@@ -149,7 +154,7 @@ for _, player in pairs(Players:GetPlayers()) do
     end
 end)
 
--- Repeat ESP when a new round starts
+-- Refresh ESP on round end (Heartbeat)
 RunService.Heartbeat:Connect(function()
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer then
@@ -157,3 +162,5 @@ RunService.Heartbeat:Connect(function()
         end
     end
 end)
+
+print("Script loaded successfully!")
