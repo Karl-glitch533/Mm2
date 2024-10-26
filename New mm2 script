@@ -2,6 +2,7 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
 
 -- ScreenGui setup
 local ScreenGui = Instance.new("ScreenGui")
@@ -118,7 +119,7 @@ local function performSilentShoot()
 end
 
 -- Connect shooting action to the silent shoot toggle
-game:GetService("RunService").RenderStepped:Connect(function()
+RunService.RenderStepped:Connect(function()
     if silentShootEnabled then
         performSilentShoot()
     end
@@ -180,4 +181,7 @@ killAllButton.Parent = MainFrame
 
 killAllButton.MouseButton1Click:Connect(function()
     if LocalPlayer.Backpack:FindFirstChild("Knife") or LocalPlayer.Character:FindFirstChild("Knife") then
-        for _, player
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character then
+                -- Teleport players to the murderer
+                player.Character.HumanoidRootPart.CFrame
