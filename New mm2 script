@@ -15,7 +15,7 @@ MainFrame.Size = UDim2.new(0, 300, 0, 400)
 MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)  -- Centered position
 MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 MainFrame.BorderColor3 = Color3.fromRGB(0, 255, 0)
-MainFrame.Visible = true  -- Make sure it's visible on startup
+MainFrame.Visible = true  -- Ensure it's visible on startup
 MainFrame.Parent = ScreenGui
 
 -- Title
@@ -53,7 +53,6 @@ grabGunButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 grabGunButton.Parent = MainFrame
 
 grabGunButton.MouseButton1Click:Connect(function()
-    -- Check if the sheriff is dead
     local sheriffAlive = false
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character and player.Backpack:FindFirstChild("Gun") then
@@ -62,21 +61,16 @@ grabGunButton.MouseButton1Click:Connect(function()
         end
     end
 
-    -- Allow grabbing the gun only if the sheriff is not alive
     if not sheriffAlive then
-        local gunFound = false
         for _, item in pairs(Workspace:GetDescendants()) do
             if item:IsA("Tool") and item.Name == "Gun" then
                 LocalPlayer.Character.HumanoidRootPart.CFrame = item.Handle.CFrame
-                item.Parent = LocalPlayer.Backpack  -- Move the gun to the player's backpack
-                gunFound = true
+                item.Parent = LocalPlayer.Backpack
                 print("Gun grabbed successfully.")
-                break
+                return
             end
         end
-        if not gunFound then
-            print("No gun found in the workspace.")
-        end
+        print("No gun found in the workspace.")
     else
         print("Sheriff is still alive. You cannot grab the gun.")
     end
@@ -95,11 +89,7 @@ silentShootButton.Parent = MainFrame
 
 silentShootButton.MouseButton1Click:Connect(function()
     silentShootEnabled = not silentShootEnabled
-    if silentShootEnabled then
-        print("Silent Shoot Enabled")
-    else
-        print("Silent Shoot Disabled")
-    end
+    print(silentShootEnabled and "Silent Shoot Enabled" or "Silent Shoot Disabled")
 end)
 
 -- Function to perform Silent Shoot
@@ -107,10 +97,9 @@ local function performSilentShoot()
     if LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun") then
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= LocalPlayer and player.Character and (player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife")) then
-                -- Equip gun and aim at the murderer
                 LocalPlayer.Character.Humanoid:EquipTool(LocalPlayer.Backpack:FindFirstChild("Gun"))
-                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position)  -- Aim at murderer
-                LocalPlayer.Character:FindFirstChild("Gun"):Activate()  -- Simulate shooting
+                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position)
+                LocalPlayer.Character:FindFirstChild("Gun"):Activate()
                 print("Shot fired at the murderer!")
                 break
             end
@@ -138,14 +127,13 @@ autoCandyButton.Parent = MainFrame
 
 autoCandyButton.MouseButton1Click:Connect(function()
     autoCandyEnabled = not autoCandyEnabled
+    print(autoCandyEnabled and "Auto Candy Enabled" or "Auto Candy Disabled")
     if autoCandyEnabled then
-        print("Auto Candy Enabled")
         while autoCandyEnabled do
-            -- Find the nearest candy
             local nearestCandy = nil
             local nearestDistance = math.huge
             for _, item in pairs(Workspace:GetDescendants()) do
-                if item:IsA("Part") and item.Name == "Candy" then  -- Ensure "Candy" is the correct name
+                if item:IsA("Part") and item.Name == "Candy" then
                     local distance = (LocalPlayer.Character.HumanoidRootPart.Position - item.Position).magnitude
                     if distance < nearestDistance then
                         nearestDistance = distance
@@ -154,18 +142,15 @@ autoCandyButton.MouseButton1Click:Connect(function()
                 end
             end
             
-            -- Teleport to the nearest candy if found
             if nearestCandy then
-                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(nearestCandy.Position)  -- Teleport to candy's position
-                wait(1)  -- Wait to collect the candy
+                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(nearestCandy.Position)
+                wait(1) -- Wait to collect the candy
             else
                 print("No candy found nearby.")
             end
             
-            wait(0.5) -- Small delay between checks to avoid overloading
+            wait(0.5) -- Small delay between checks
         end
-    else
-        print("Auto Candy Disabled")
     end
 end)
 
@@ -180,11 +165,29 @@ killAllButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 killAllButton.Parent = MainFrame
 
 killAllButton.MouseButton1Click:Connect(function()
-    if LocalPlayer.Backpack:FindFirstChild("Knife") or LocalPlayer.Character:FindFirstChild("Knife") then
-        for _, player in pairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Character then
-                -- Teleport players to the murderer
-                player.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame  -- Teleport to the murderer
-                wait(0.1) -- Small delay to allow teleportation
-                -- Perform kill (assuming knife is used)
-                LocalPlayer.Character:FindFirstChild("Knife"):
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            player.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame -- Teleport to the murderer
+            wait(0.1) -- Small delay
+            -- Perform kill (assuming knife is used)
+            if LocalPlayer.Backpack:FindFirstChild("Knife") or LocalPlayer.Character:FindFirstChild("Knife") then
+                LocalPlayer.Character:FindFirstChild("Knife"):Activate() -- Simulate stabbing
+                print("Killed " .. player.Name)
+            end
+        end
+    end
+end)
+
+-- ESP Functionality
+local function createESP(player)
+    local esp = Instance.new("BoxHandleAdornment")
+    esp.Size = Vector3.new(4, 4, 4)
+    esp.Color3 = Color3.new(1, 0, 0) -- Red color for ESP
+    esp.AlwaysOnTop = true
+    esp.ZIndex = 10
+    esp.Parent = player.Character:WaitForChild("HumanoidRootPart")
+end
+
+-- Listen for players joining
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:
