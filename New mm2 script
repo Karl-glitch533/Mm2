@@ -59,15 +59,27 @@ end
 
 -- Grab Gun Button
 createButton("Grab Gun", UDim2.new(0, 10, 0, 50), function()
-    for _, tool in pairs(Workspace:GetDescendants()) do
-        if tool:IsA("Tool") and tool.Name == "Gun" then
-            LocalPlayer.Character.HumanoidRootPart.CFrame = tool.Handle.CFrame
-            tool.Parent = LocalPlayer.Backpack
-            print("Gun grabbed successfully.")
-            return
+    local sheriffAlive = false
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Backpack:FindFirstChild("Gun") then
+            sheriffAlive = true
+            break
         end
     end
-    print("No gun found in the workspace.")
+
+    if not sheriffAlive then
+        for _, item in pairs(Workspace:GetDescendants()) do
+            if item:IsA("Tool") and item.Name == "Gun" then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = item.Handle.CFrame
+                item.Parent = LocalPlayer.Backpack
+                print("Gun grabbed successfully.")
+                return
+            end
+        end
+        print("No gun found in the workspace.")
+    else
+        print("Sheriff is still alive. You cannot grab the gun.")
+    end
 end)
 
 -- Silent Shoot Toggle
@@ -82,7 +94,6 @@ local function performSilentShoot()
     if LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun") then
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") then
-                -- Aim at player
                 LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position)
                 LocalPlayer.Character:FindFirstChild("Gun"):Activate()
                 print("Shot fired at " .. player.Name)
@@ -133,26 +144,30 @@ end)
 
 -- Kill All Button
 createButton("Kill All", UDim2.new(0, 10, 0, 170), function()
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
-            player.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame
-            wait(0.1) -- Small delay
-            if LocalPlayer.Backpack:FindFirstChild("Knife") or LocalPlayer.Character:FindFirstChild("Knife") then
+    if LocalPlayer.Backpack:FindFirstChild("Knife") or LocalPlayer.Character:FindFirstChild("Knife") then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character then
+                player.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame
+                wait(0.1) -- Small delay
                 LocalPlayer.Character:FindFirstChild("Knife"):Activate()
                 print("Killed " .. player.Name)
             end
         end
+    else
+        print("You need to be a murderer with a knife to use Kill All!")
     end
 end)
 
 -- ESP Functionality
 local function createESP(player)
-    local esp = Instance.new("BoxHandleAdornment")
-    esp.Size = Vector3.new(4, 4, 4)
-    esp.Color3 = Color3.new(1, 0, 0) -- Red color for ESP
-    esp.AlwaysOnTop = true
-    esp.ZIndex = 10
-    esp.Parent = player.Character:WaitForChild("HumanoidRootPart")
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local esp = Instance.new("BoxHandleAdornment")
+        esp.Size = Vector3.new(4, 4, 4)
+        esp.Color3 = Color3.new(1, 0, 0) -- Red color for ESP
+        esp.AlwaysOnTop = true
+        esp.ZIndex = 10
+        esp.Parent = player.Character.HumanoidRootPart
+    end
 end
 
 -- Listen for players joining
@@ -164,21 +179,16 @@ end)
 
 -- Create ESP for existing players
 for _, player in pairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer and player.Character then
+    if player ~= LocalPlayer then
+        player.CharacterAdded:Wait()  -- Ensure the character is loaded
         createESP(player)
-    end
-end
-
-Players.PlayerRemoving:Connect(function(player)
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        player.Character.HumanoidRootPart:Destroy() -- Remove ESP when player leaves
     end
 end)
 
 -- Repeat ESP when a new round starts
 game:GetService("RunService").Heartbeat:Connect(function()
     for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and not player.Character:FindFirstChild("HumanoidRootPart"):FindFirstChildOfClass("BoxHandleAdornment") then
+        if player ~= LocalPlayer then
             createESP(player)
         end
     end
