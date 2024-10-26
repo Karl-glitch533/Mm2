@@ -4,10 +4,16 @@ local LocalPlayer = Players.LocalPlayer
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 
+-- Ensure that PlayerGui exists
+if not LocalPlayer:FindFirstChild("PlayerGui") then
+    warn("PlayerGui not found!")
+    return
+end
+
 -- ScreenGui setup
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "VanxellHub"
-ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.Parent = LocalPlayer.PlayerGui
 
 -- Main Frame for Hub
 local MainFrame = Instance.new("Frame")
