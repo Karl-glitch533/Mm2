@@ -28,20 +28,6 @@ Title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 Title.BorderColor3 = Color3.fromRGB(0, 255, 0)
 Title.Parent = MainFrame
 
--- GUI Toggle Button
-local toggleGuiButton = Instance.new("TextButton")
-toggleGuiButton.Size = UDim2.new(0, 80, 0, 30)
-toggleGuiButton.Position = UDim2.new(0, 10, 0.5, -15)  -- Positioned on the left side
-toggleGuiButton.Text = "Toggle GUI"
-toggleGuiButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-toggleGuiButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
-toggleGuiButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleGuiButton.Parent = ScreenGui
-
-toggleGuiButton.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible  -- Toggle visibility
-end)
-
 -- Function to create buttons
 local function createButton(name, position, callback)
     local button = Instance.new("TextButton")
@@ -89,27 +75,6 @@ createButton("Toggle Silent Shoot", UDim2.new(0, 10, 0, 90), function()
     print(silentShootEnabled and "Silent Shoot Enabled" or "Silent Shoot Disabled")
 end)
 
--- Function to perform Silent Shoot
-local function performSilentShoot()
-    if LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun") then
-        for _, player in pairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") then
-                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position)
-                LocalPlayer.Character:FindFirstChild("Gun"):Activate()
-                print("Shot fired at " .. player.Name)
-                break
-            end
-        end
-    end
-end
-
--- Connect shooting action to the silent shoot toggle
-RunService.RenderStepped:Connect(function()
-    if silentShootEnabled then
-        performSilentShoot()
-    end
-end)
-
 -- Auto Candy Button
 local autoCandyEnabled = false
 createButton("Toggle Auto Candy", UDim2.new(0, 10, 0, 130), function()
@@ -118,6 +83,7 @@ createButton("Toggle Auto Candy", UDim2.new(0, 10, 0, 130), function()
     
     if autoCandyEnabled then
         while autoCandyEnabled do
+            wait(0.5)  -- Prevents script from freezing
             local nearestCandy = nil
             local nearestDistance = math.huge
             for _, item in pairs(Workspace:GetDescendants()) do
@@ -136,8 +102,6 @@ createButton("Toggle Auto Candy", UDim2.new(0, 10, 0, 130), function()
             else
                 print("No candy found nearby.")
             end
-            
-            wait(0.5) -- Small delay between checks
         end
     end
 end)
@@ -186,7 +150,7 @@ for _, player in pairs(Players:GetPlayers()) do
 end)
 
 -- Repeat ESP when a new round starts
-game:GetService("RunService").Heartbeat:Connect(function()
+RunService.Heartbeat:Connect(function()
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer then
             createESP(player)
