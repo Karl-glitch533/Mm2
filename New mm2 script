@@ -29,7 +29,7 @@ Title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 Title.BorderColor3 = Color3.fromRGB(0, 255, 0)
 Title.Parent = MainFrame
 
--- GUI Toggle positioned on the left side of the screen
+-- GUI Toggle Button positioned on the left side of the screen
 local guiEnabled = true
 local toggleGuiButton = Instance.new("TextButton")
 toggleGuiButton.Size = UDim2.new(0, 80, 0, 30)
@@ -122,16 +122,37 @@ autoCandyButton.MouseButton1Click:Connect(function()
                 print("No candy found nearby.")
             end
             
-            -- Check if player's backpack is full (adjust condition based on your game's logic)
-            if #LocalPlayer.Backpack:GetChildren() >= 10 then  -- Replace 10 with the max allowed items in backpack
-                print("Backpack is full! Stopping Auto Candy.")
-                autoCandyEnabled = false
-            end
-            
             wait(0.5) -- Small delay between checks to avoid overloading
         end
     else
         print("Auto Candy Disabled")
+    end
+end)
+
+-- Kill All Button
+local killAllButton = Instance.new("TextButton")
+killAllButton.Size = UDim2.new(0, 80, 0, 30)
+killAllButton.Position = UDim2.new(0, 10, 0, 170)
+killAllButton.Text = "Kill All"
+killAllButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+killAllButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
+killAllButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+killAllButton.Parent = MainFrame
+
+killAllButton.MouseButton1Click:Connect(function()
+    if LocalPlayer.Backpack:FindFirstChild("Knife") or LocalPlayer.Character:FindFirstChild("Knife") then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                -- Teleport players to the murderer
+                player.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame
+                wait(0.1)  -- Small delay for smooth teleporting
+                -- Auto equip knife and kill
+                LocalPlayer.Character.Humanoid:EquipTool(LocalPlayer.Backpack:FindFirstChild("Knife"))
+                LocalPlayer.Character:FindFirstChild("Knife"):Activate()
+            end
+        end
+    else
+        print("You need to be a murderer with a knife to use Kill All!")
     end
 end)
 
@@ -167,42 +188,4 @@ end
 -- Initial ESP for existing players
 for _, player in pairs(Players:GetPlayers()) do
     if player ~= LocalPlayer and player.Character then
-        addEsp(player)
-    end
-end
-
--- Add ESP for new players joining
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function()
-        addEsp(player)
-    end)
-end)
-
--- Silent Aim Functionality
-local function onShoot()
-    if silentAimEnabled then
-        for _, player in pairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Character and (player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife")) then
-                local murderPosition = player.Character.HumanoidRootPart.Position
-                local bullet = LocalPlayer.Character:FindFirstChild("Gun") and LocalPlayer.Character.Gun:FindFirstChild("Handle").Bullet
-                if bullet then
-                    bullet.CFrame = CFrame.new(bullet.Position, murderPosition)
-                    break
-                end
-            end
-        end
-    end
-end
-
--- Connect the shoot function to tool activation
-local function connectGun()
-    local gun = LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun")
-    if gun then
-        gun.Activated:Connect(onShoot)
-    end
-end
-
-LocalPlayer.Backpack.ChildAdded:Connect(connectGun)
-LocalPlayer.Character.ChildAdded:Connect(connectGun)
-
-print("Vanxell Hub Loaded!")
+        addEsp(player
