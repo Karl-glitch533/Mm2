@@ -51,6 +51,8 @@ toggleButton.MouseButton1Click:Connect(toggleGUI)
 
 -- Auto Candy Feature
 local isCollecting = false
+local candiesCollected = {}
+
 CreateButton("Toggle Auto Candy", function()
     isCollecting = not isCollecting
     if isCollecting then
@@ -60,8 +62,9 @@ CreateButton("Toggle Auto Candy", function()
         
         while isCollecting do
             for _, candy in pairs(workspace:GetChildren()) do
-                if candy:IsA("Part") and candy.Name == "Candy" then
-                    character.HumanoidRootPart.CFrame = candy.CFrame
+                if candy:IsA("Part") and candy.Name == "Candy" and not candiesCollected[candy] then
+                    candiesCollected[candy] = true -- Mark candy as collected
+                    character.HumanoidRootPart.CFrame = candy.CFrame -- Teleport to candy
                     wait(0.5) -- Adjust timing as needed
                 end
             end
@@ -78,19 +81,28 @@ CreateButton("Reset Character", function()
     player.Character:BreakJoints() -- This will reset the character
 end, UDim2.new(0.05, 0, 0.2, 0))
 
--- Auto Shoot Button (for Sheriff)
+-- Auto Shoot Button
 local isShooting = false
-CreateButton("Toggle Auto Shoot", function()
-    isShooting = not isShooting
-    if isShooting then
-        toggleButton.Text = "Auto Shoot: ON"
+local shootButton
+local function createShootButton()
+    if shootButton then return end -- Prevent creating multiple buttons
+    shootButton = Instance.new("TextButton")
+    shootButton.Text = "Auto Shoot"
+    shootButton.Size = UDim2.new(0.1, 0, 0.1, 0)
+    shootButton.Position = UDim2.new(0.9, 0, 0.3, 0) -- Right side of the screen
+    shootButton.BackgroundColor3 = Color3.fromRGB(60, 255, 60)
+    shootButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+    shootButton.Parent = VanxellHub
+    shootButton.MouseButton1Click:Connect(function()
         local player = game.Players.LocalPlayer
+        if player.Character and player.Character:FindFirstChild("Tool") then
+            local tool = player.Character.Tool
+            isShooting = not isShooting
+            shootButton.Text = isShooting and "Shooting ON" or "Auto Shoot"
 
-        while isShooting do
-            wait(0.5)
-            if player and player.Character then
-                local tool = player.Character:FindFirstChildOfClass("Tool")
-                if tool and tool:IsA("Tool") then
+            while isShooting do
+                wait(0.5)
+                if player and player.Character then
                     for _, enemy in pairs(workspace:GetChildren()) do
                         if enemy:IsA("Model") and enemy:FindFirstChild("Humanoid") and enemy:FindFirstChild("Player") then
                             -- Check if the enemy is the murderer
@@ -103,10 +115,35 @@ CreateButton("Toggle Auto Shoot", function()
                 end
             end
         end
-    else
-        toggleButton.Text = "Auto Shoot: OFF"
-    end
+    end)
+end
+
+CreateButton("Toggle Auto Shoot", function()
+    createShootButton()
 end, UDim2.new(0.05, 0, 0.3, 0))
+
+-- Identify Murderer/Sheriff Button
+local function createIdentifyButton()
+    local identifyButton = Instance.new("TextButton")
+    identifyButton.Text = "Identify Murderer/Sheriff"
+    identifyButton.Size = UDim2.new(0.9, 0, 0, 40)
+    identifyButton.Position = UDim2.new(0.05, 0, 0.4, 0)
+    identifyButton.BackgroundColor3 = Color3.fromRGB(255, 255, 60)
+    identifyButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+    identifyButton.Parent = MainFrame
+
+    identifyButton.MouseButton1Click:Connect(function()
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player.Team == "Murderer" then
+                player.Character.HumanoidRootPart.CFrame = CFrame.new(0, 0, 0) -- Teleport to Murderer (example coordinates)
+            elseif player.Team == "Sheriff" then
+                player.Character.HumanoidRootPart.CFrame = CFrame.new(0, 0, 0) -- Teleport to Sheriff (example coordinates)
+            end
+        end
+    end)
+end
+
+createIdentifyButton()
 
 -- Exit Button
 CreateButton("Exit", function()
