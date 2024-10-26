@@ -27,7 +27,7 @@ Title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 Title.BorderColor3 = Color3.fromRGB(0, 255, 0)
 Title.Parent = MainFrame
 
--- GUI Toggle Button positioned on the left side of the screen
+-- GUI Toggle Button
 local toggleGuiButton = Instance.new("TextButton")
 toggleGuiButton.Size = UDim2.new(0, 80, 0, 30)
 toggleGuiButton.Position = UDim2.new(0, 10, 0.5, -15)  -- Positioned on the left side
@@ -61,6 +61,7 @@ grabGunButton.MouseButton1Click:Connect(function()
         end
     end
 
+    -- Allow grabbing the gun only if the sheriff is not alive
     if not sheriffAlive then
         local gunFound = false
         for _, item in pairs(Workspace:GetDescendants()) do
@@ -80,122 +81,51 @@ grabGunButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Auto Candy Button
-local autoCandyEnabled = false
-local autoCandyButton = Instance.new("TextButton")
-autoCandyButton.Size = UDim2.new(1, -20, 0, 30)
-autoCandyButton.Position = UDim2.new(0, 10, 0, 90)
-autoCandyButton.Text = "Auto Candy"
-autoCandyButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-autoCandyButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
-autoCandyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-autoCandyButton.Parent = MainFrame
+-- Silent Shoot Toggle
+local silentShootEnabled = false
+local silentShootButton = Instance.new("TextButton")
+silentShootButton.Size = UDim2.new(1, -20, 0, 30)
+silentShootButton.Position = UDim2.new(0, 10, 0, 90)
+silentShootButton.Text = "Silent Shoot"
+silentShootButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+silentShootButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
+silentShootButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+silentShootButton.Parent = MainFrame
 
-autoCandyButton.MouseButton1Click:Connect(function()
-    autoCandyEnabled = not autoCandyEnabled
-    if autoCandyEnabled then
-        print("Auto Candy Enabled")
-        while autoCandyEnabled do
-            local candies = Workspace:GetDescendants()
-            local nearestCandy = nil
-            local nearestDistance = math.huge
-
-            -- Find the nearest candy
-            for _, item in pairs(candies) do
-                if item:IsA("Part") and item.Name == "Candy" then  -- Ensure "Candy" is the correct name
-                    local distance = (LocalPlayer.Character.HumanoidRootPart.Position - item.Position).magnitude
-                    if distance < nearestDistance then
-                        nearestDistance = distance
-                        nearestCandy = item
-                    end
-                end
-            end
-            
-            -- Teleport to the nearest candy if found
-            if nearestCandy then
-                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(nearestCandy.Position)  -- Teleport to candy's position
-                wait(1)  -- Wait to collect the candy (adjust this wait time as necessary)
-                print("Collecting candy...")
-            else
-                print("No candy found nearby.")
-            end
-            
-            wait(0.5) -- Small delay between checks to avoid overloading
-        end
+silentShootButton.MouseButton1Click:Connect(function()
+    silentShootEnabled = not silentShootEnabled
+    if silentShootEnabled then
+        print("Silent Shoot Enabled")
     else
-        print("Auto Candy Disabled")
+        print("Silent Shoot Disabled")
     end
 end)
 
--- Kill All Button
-local killAllButton = Instance.new("TextButton")
-killAllButton.Size = UDim2.new(1, -20, 0, 30)
-killAllButton.Position = UDim2.new(0, 10, 0, 130)
-killAllButton.Text = "Kill All"
-killAllButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-killAllButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
-killAllButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-killAllButton.Parent = MainFrame
-
-killAllButton.MouseButton1Click:Connect(function()
-    if LocalPlayer.Backpack:FindFirstChild("Knife") or LocalPlayer.Character:FindFirstChild("Knife") then
+-- Function to perform Silent Shoot
+local function performSilentShoot()
+    if LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun") then
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= LocalPlayer and player.Character then
-                -- Teleport players to the murderer
-                player.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame
-                wait(0.1)  -- Small delay for smooth teleporting
-                -- Auto equip knife and kill
-                LocalPlayer.Character.Humanoid:EquipTool(LocalPlayer.Backpack:FindFirstChild("Knife"))
-                LocalPlayer.Character:FindFirstChild("Knife"):Activate()
+                local murdererFound = false
+                if player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife") then
+                    murdererFound = true
+                    LocalPlayer.Character.Humanoid:EquipTool(LocalPlayer.Backpack:FindFirstChild("Gun"))
+                    -- Simulate shooting at the murderer
+                    player.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position)  -- Aim at murderer
+                    LocalPlayer.Character:FindFirstChild("Gun"):Activate()
+                    print("Shot fired at the murderer!")
+                end
+                if murdererFound then
+                    break  -- Only shoot at one murderer
+                end
             end
         end
-    else
-        print("You need to be a murderer with a knife to use Kill All!")
+    end
+end
+
+-- Connect shooting action to the silent shoot toggle
+game:GetService("RunService").RenderStepped:Connect(function()
+    if silentShootEnabled then
+        performSilentShoot()
     end
 end)
-
--- ESP for Player Roles
-local highlights = {}  -- To keep track of ESP highlights
-
-local function addEsp(player)
-    if player.Character then
-        local highlight = Instance.new("Highlight")
-        highlight.Adornee = player.Character
-        highlight.Parent = player.Character
-        highlights[player.UserId] = highlight  -- Store the highlight by user ID
-
-        local function updateRole()
-            if player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife") then
-                highlight.FillColor = Color3.fromRGB(255, 0, 0)  -- Murderer (Red)
-            elseif player.Backpack:FindFirstChild("Gun") or player.Character:FindFirstChild("Gun") then
-                highlight.FillColor = Color3.fromRGB(0, 0, 255)  -- Sheriff (Blue)
-            else
-                highlight.FillColor = Color3.fromRGB(0, 255, 0)  -- Innocent (Green)
-            end
-        end
-
-        -- Update highlight when character is added or updated
-        player.CharacterAdded:Connect(function(character)
-            highlight.Adornee = character  -- Update highlight to new character
-            updateRole()  -- Update role on character addition
-        end)
-
-        -- Connect to Backpack changes for the player
-        player.Backpack.ChildAdded:Connect(updateRole)
-        player.Character.DescendantAdded:Connect(updateRole)
-
-        updateRole()  -- Initial role update
-    end
-end
-
--- Function to reset ESP for all players
-local function resetEsp()
-    for _, highlight in pairs(highlights) do
-        highlight:Destroy()  -- Remove existing highlights
-    end
-    highlights = {}  -- Clear the stored highlights
-end
-
--- Initial ESP for existing players
-for _, player in pairs(Players:GetPlayers()) do
-    if player ~= Local
