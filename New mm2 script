@@ -96,10 +96,12 @@ autoCandyButton.MouseButton1Click:Connect(function()
     if autoCandyEnabled then
         print("Auto Candy Enabled")
         while autoCandyEnabled do
-            -- Find the nearest candy
+            local candies = Workspace:GetDescendants()
             local nearestCandy = nil
             local nearestDistance = math.huge
-            for _, item in pairs(Workspace:GetDescendants()) do
+
+            -- Find the nearest candy
+            for _, item in pairs(candies) do
                 if item:IsA("Part") and item.Name == "Candy" then  -- Ensure "Candy" is the correct name
                     local distance = (LocalPlayer.Character.HumanoidRootPart.Position - item.Position).magnitude
                     if distance < nearestDistance then
@@ -112,7 +114,8 @@ autoCandyButton.MouseButton1Click:Connect(function()
             -- Teleport to the nearest candy if found
             if nearestCandy then
                 LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(nearestCandy.Position)  -- Teleport to candy's position
-                wait(1)  -- Wait to collect the candy
+                wait(1)  -- Wait to collect the candy (adjust this wait time as necessary)
+                print("Collecting candy...")
             else
                 print("No candy found nearby.")
             end
@@ -196,3 +199,5 @@ Players.PlayerAdded:Connect(function(player)
         addEsp(player)
     end)
 end)
+
+print("Vanxell Hub Loaded!")
