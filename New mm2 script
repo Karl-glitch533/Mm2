@@ -2,6 +2,7 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
 -- ScreenGui setup
 local ScreenGui = Instance.new("ScreenGui")
@@ -42,7 +43,6 @@ toggleGuiButton.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible  -- Toggle visibility
 end)
 
--- The rest of your GUI buttons and functions go here
 -- Grab Gun Button
 local grabGunButton = Instance.new("TextButton")
 grabGunButton.Size = UDim2.new(1, -20, 0, 30)
@@ -57,7 +57,7 @@ grabGunButton.MouseButton1Click:Connect(function()
     -- Check if the sheriff is dead
     local sheriffAlive = false
     for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Backpack:FindFirstChild("Gun") then
+        if player ~= LocalPlayer and player.Backpack:FindFirstChild("Gun") then
             sheriffAlive = true
             break
         end
@@ -65,18 +65,13 @@ grabGunButton.MouseButton1Click:Connect(function()
 
     -- Allow grabbing the gun only if the sheriff is not alive
     if not sheriffAlive then
-        local gunFound = false
         for _, item in pairs(Workspace:GetDescendants()) do
             if item:IsA("Tool") and item.Name == "Gun" then
                 LocalPlayer.Character.HumanoidRootPart.CFrame = item.Handle.CFrame
-                item.Parent = LocalPlayer.Backpack  -- Move the gun to the player's backpack
-                gunFound = true
+                item.Parent = LocalPlayer.Backpack
                 print("Gun grabbed successfully.")
                 break
             end
-        end
-        if not gunFound then
-            print("No gun found in the workspace.")
         end
     else
         print("Sheriff is still alive. You cannot grab the gun.")
@@ -95,9 +90,8 @@ silentShootButton.Parent = MainFrame
 
 silentShootButton.MouseButton1Click:Connect(function()
     if LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun") then
-        -- Silent shooting logic here
         print("Silent shooting is enabled.")
-        -- Your shooting logic to hit the murderer without alerting them
+        -- Silent shooting logic to target the murderer goes here
     else
         print("You need to grab the gun first.")
     end
@@ -114,10 +108,10 @@ autoFarmButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 autoFarmButton.Parent = MainFrame
 
 autoFarmButton.MouseButton1Click:Connect(function()
-    while wait(1) do  -- Adjust the wait time as necessary
+    while wait(1) do
         for _, item in pairs(ReplicatedStorage:GetChildren()) do
             if item:IsA("Tool") and item.Name == "Candy" then
-                item.Parent = LocalPlayer.Backpack  -- Automatically grab candy
+                item.Parent = LocalPlayer.Backpack
                 print("Candy grabbed automatically.")
             end
         end
@@ -142,14 +136,14 @@ local function addEsp(player)
         end
 
         player.CharacterAdded:Connect(function(character)
-            highlight.Adornee = character  -- Update highlight to new character
-            updateRole()  -- Update role on character addition
+            highlight.Adornee = character
+            updateRole()
         end)
 
         player.Backpack.ChildAdded:Connect(updateRole)
         player.Character.DescendantAdded:Connect(updateRole)
 
-        updateRole()  -- Initial role update
+        updateRole()
     end
 end
 
@@ -163,13 +157,13 @@ end
 -- ESP for new players
 Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function(character)
-        wait(1)  -- Wait for the character to fully load
+        wait(1)
         addEsp(player)
     end)
 end)
 
 -- Repeat ESP when the round ends
-game:GetService("ReplicatedStorage").RoundEnded:Connect(function()
+ReplicatedStorage.RoundEnded.OnClientEvent:Connect(function()
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer then
             addEsp(player)
