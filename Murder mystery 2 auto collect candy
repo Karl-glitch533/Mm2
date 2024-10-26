@@ -15,6 +15,7 @@ MainFrame.Size = UDim2.new(0, 300, 0, 400)
 MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
 MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 MainFrame.BorderSizePixel = 0
+MainFrame.Visible = false  -- Start with the GUI hidden
 
 local Title = Instance.new("TextLabel", MainFrame)
 Title.Size = UDim2.new(1, 0, 0, 50)
@@ -35,7 +36,6 @@ openButton.Size = UDim2.new(0.5, 0, 0, 50)
 openButton.Position = UDim2.new(0.25, 0, 0.1, 0)
 openButton.Text = "Open GUI"
 openButton.TextColor3 = Color3.fromRGB(0, 255, 0)
-MainFrame.Visible = false
 
 local autoCandyButton = Instance.new("TextButton", MainFrame)
 autoCandyButton.Size = UDim2.new(1, 0, 0, 50)
