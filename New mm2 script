@@ -54,29 +54,23 @@ grabGunButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 grabGunButton.Parent = MainFrame
 
 grabGunButton.MouseButton1Click:Connect(function()
-    -- Check if the sheriff is alive
-    local sheriffAlive = false
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Gun") then
-            sheriffAlive = true
-            break
+    -- Allow grabbing the gun only if the sheriff is not alive
+    local gun = nil
+    for _, item in pairs(Workspace:GetDescendants()) do
+        if item:IsA("Tool") and item.Name == "Gun" and item.Parent == Workspace then
+            gun = item
+            break  -- Stop searching once we find the gun
         end
     end
 
-    -- Allow grabbing the gun only if the sheriff is not alive
-    if not sheriffAlive then
-        for _, item in pairs(Workspace:GetDescendants()) do
-            if item:IsA("Tool") and item.Name == "Gun" and item.Parent == Workspace then
-                -- Move the player's character to the gun's position
-                LocalPlayer.Character.HumanoidRootPart.CFrame = item.Handle.CFrame
-                item.Parent = LocalPlayer.Backpack  -- Move the gun to the player's backpack
-                print("Gun grabbed successfully.")
-                return
-            end
-        end
-        print("No gun found in the workspace.")
+    if gun then
+        -- Teleport the player to the gun's position
+        LocalPlayer.Character.HumanoidRootPart.CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)  -- Adjust height if necessary
+        wait(0.1)  -- Small wait to allow teleportation to complete
+        gun.Parent = LocalPlayer.Backpack  -- Move the gun to the player's backpack
+        print("Gun grabbed successfully.")
     else
-        print("Sheriff is still alive. You cannot grab the gun.")
+        print("No gun found in the workspace.")
     end
 end)
 
