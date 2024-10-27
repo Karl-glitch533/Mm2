@@ -110,7 +110,7 @@ grabGunButton.MouseButton1Click:Connect(function()
 
     if gun then
         -- Teleport the player to the gun's position
-        LocalPlayer.Character.HumanoidRootPart.CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)  -- Adjust height if necessary
+        LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)  -- Adjust height if necessary
         wait(0.1)  -- Small wait to allow teleportation to complete
         gun.Parent = LocalPlayer.Backpack  -- Move the gun to the player's backpack
         print("Gun grabbed successfully.")
