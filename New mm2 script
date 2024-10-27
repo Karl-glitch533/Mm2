@@ -135,19 +135,17 @@ local function createESP(player)
             espBox.Parent = character.HumanoidRootPart
 
             -- Set color based on role
-            if player:FindFirstChild("PlayerData") and player.PlayerData:FindFirstChild("Role") then
-                local role = player.PlayerData.Role.Value
-                if role == "Murderer" then
-                    espBox.Color3 = Color3.new(1, 0, 0)  -- Red
-                elseif role == "Sheriff" then
-                    espBox.Color3 = Color3.new(0, 0, 1)  -- Blue
-                elseif role == "Innocent" then
-                    espBox.Color3 = Color3.new(0, 1, 0)  -- Green
+            player:GetPropertyChangedSignal("Team"):Wait() -- Wait for team change
+            if player.Team then
+                if player.Team.Name == "Murderers" then
+                    espBox.Color3 = Color3.new(1, 0, 0)  -- Red for Murderer
+                elseif player.Team.Name == "Sheriffs" then
+                    espBox.Color3 = Color3.new(0, 0, 1)  -- Blue for Sheriff
+                elseif player.Team.Name == "Innocents" then
+                    espBox.Color3 = Color3.new(0, 1, 0)  -- Green for Innocents
                 else
                     espBox.Color3 = Color3.new(1, 1, 1)  -- White (default)
                 end
-            else
-                espBox.Color3 = Color3.new(1, 1, 1)  -- White (default)
             end
         end
     end)
