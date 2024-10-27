@@ -192,12 +192,4 @@ local function addEsp(player)
             getPlayerRole(player)  -- Update role on character addition
         end)
 
-        player.Backpack.ChildAdded:Connect(getPlayerRole)
-        player.Character.DescendantAdded:Connect(getPlayerRole)
-    end
-end
-
--- Initial ESP for existing players
-for _, player in pairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer then
-        addEsp(player)
+        player
