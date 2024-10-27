@@ -4,14 +4,6 @@ local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
-
--- Anti-detect Variables
-local spoofedHumanoidRootPart = LocalPlayer.Character:WaitForChild("HumanoidRootPart"):Clone()
-spoofedHumanoidRootPart.Anchored = true
-spoofedHumanoidRootPart.Transparency = 1
-spoofedHumanoidRootPart.CanCollide = false
-spoofedHumanoidRootPart.Parent = Workspace
 
 -- ScreenGui setup
 local ScreenGui = Instance.new("ScreenGui")
@@ -107,78 +99,70 @@ end
 -- Grab Gun Button
 local grabGunButton = createStyledButton("Grab Gun", 50)
 grabGunButton.MouseButton1Click:Connect(function()
+    print("[DEBUG] Grab Gun button clicked")  -- Debug checkpoint
+
+    -- Allow grabbing the gun only if the sheriff is not alive
     local gun = nil
     for _, item in pairs(Workspace:GetDescendants()) do
         if item:IsA("Tool") and item.Name == "Gun" and item.Parent == Workspace then
             gun = item
-            break
+            break  -- Stop searching once we find the gun
         end
     end
 
     if gun then
-        -- Move cloned HumanoidRootPart to the gun's position and set up a teleport
-        spoofedHumanoidRootPart.CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)
-        wait(0.1)
-        LocalPlayer.Character.HumanoidRootPart.CFrame = spoofedHumanoidRootPart.CFrame
-        gun.Parent = LocalPlayer.Backpack
-        print("Gun grabbed successfully.")
+        print("[DEBUG] Gun found, attempting teleport")  -- Debug checkpoint
+        -- Teleport the player to the gun's position
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)  -- Adjust height if necessary
+            wait(0.1)  -- Small wait to allow teleportation to complete
+            gun.Parent = LocalPlayer.Backpack  -- Move the gun to the player's backpack
+            print("Gun grabbed successfully.")
+        else
+            print("[ERROR] HumanoidRootPart not found.")
+        end
     else
         print("No gun found in the workspace.")
     end
 end)
 
--- Shoot Murder Button
+-- Shoot Murder Button with Floating Button Activation
 local shootMurderButton = createStyledButton("Shoot Murder", 100)
-local smallShootButton = nil  -- Track small button
-
 shootMurderButton.MouseButton1Click:Connect(function()
-    if not smallShootButton then
-        smallShootButton = Instance.new("TextButton")
-        smallShootButton.Size = UDim2.new(0, 60, 0, 30)
-        smallShootButton.Position = UDim2.new(1, -70, 0.5, -15)
-        smallShootButton.Text = "Shoot"
-        smallShootButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-        smallShootButton.TextColor3 = Color3.fromRGB(255, 0, 0)
-        smallShootButton.Font = Enum.Font.GothamBold
-        smallShootButton.TextSize = 14
-        smallShootButton.Parent = ScreenGui
+    print("[DEBUG] Shoot Murder button clicked")  -- Debug checkpoint
+    local smallButton = Instance.new("TextButton")
+    smallButton.Size = UDim2.new(0, 60, 0, 60)
+    smallButton.Position = UDim2.new(1, -70, 0.5, -30)
+    smallButton.Text = "Shoot"
+    smallButton.BackgroundColor3 = Color3.fromRGB(255, 69, 0)
+    smallButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    smallButton.Font = Enum.Font.GothamBold
+    smallButton.TextSize = 18
+    smallButton.Parent = ScreenGui
 
-        local smallButtonCorner = UICorner:Clone()
-        smallButtonCorner.Parent = smallShootButton
+    -- Rounded Corners for the small Shoot button
+    local buttonCorner = UICorner:Clone()
+    buttonCorner.Parent = smallButton
 
-        smallShootButton.MouseEnter:Connect(function()
-            local hoverTween = TweenService:Create(smallShootButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(60, 0, 0)})
-            hoverTween:Play()
-        end)
-        smallShootButton.MouseLeave:Connect(function()
-            local leaveTween = TweenService:Create(smallShootButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(30, 30, 30)})
-            leaveTween:Play()
-        end)
+    -- Hover effect for small Shoot button
+    smallButton.MouseEnter:Connect(function()
+        local hoverTween = TweenService:Create(smallButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(255, 99, 71)})
+        hoverTween:Play()
+    end)
+    smallButton.MouseLeave:Connect(function()
+        local leaveTween = TweenService:Create(smallButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(255, 69, 0)})
+        leaveTween:Play()
+    end)
 
-        smallShootButton.MouseButton1Click:Connect(function()
-            local gun = LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun")
-            local shootRemote = ReplicatedStorage:FindFirstChild("ShootRemote")  -- Replace with actual remote event
-            if gun and shootRemote then
-                -- Use spawn to break delay and randomize delay slightly to avoid anti-cheat detection
-                spawn(function()
-                    wait(math.random(1, 3) * 0.1)  -- Randomized delay
-                    print("Shooting at the murderer!")
-                    shootRemote:FireServer(gun)
-                end)
-            else
-                print("You need to grab the gun first or check if remote exists.")
-            end
-        end)
-    end
+    smallButton.MouseButton1Click:Connect(function()
+        print("[DEBUG] Small Shoot button clicked")  -- Debug checkpoint
+        local remote = ReplicatedStorage:FindFirstChild("ShootRemote")
+        
+        if remote then
+            remote:FireServer()
+            print("Shot fired.")
+        else
+            print("[ERROR] ShootRemote not found in ReplicatedStorage.")
+        end
+    end)
 end)
-
--- ESP Functionality
-local function addEsp(player)
-    local highlight = Instance.new("Highlight")
-    highlight.Adornee = player.Character or player.CharacterAdded:Wait()
-    highlight.FillTransparency = 0.5
-    highlight.OutlineTransparency = 0.3
-    highlight.Parent = player.Character
-
-    local function updateRole()
-        if player.Backpack
