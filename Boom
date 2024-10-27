@@ -1,0 +1,122 @@
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local TitleLabel = Instance.new("TextLabel")
+local ConfigurationsLabel = Instance.new("TextLabel")
+local AutoFarmButton = Instance.new("TextButton")
+local AutoResetButton = Instance.new("TextButton")
+local ReturnToMapLabel = Instance.new("TextLabel")
+local Locations = {"Lobby", "Void (Safe)", "Voting Map", "Above Map", "Map"}
+
+-- Properties
+ScreenGui.Name = "VanxellHub"
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+MainFrame.BackgroundTransparency = 0.5
+MainFrame.Position = UDim2.new(0.1, 0, 0.1, 0)
+MainFrame.Size = UDim2.new(0, 200, 0, 300)
+MainFrame.BorderSizePixel = 2
+MainFrame.BorderColor3 = Color3.fromRGB(0, 255, 0)
+
+TitleLabel.Name = "TitleLabel"
+TitleLabel.Parent = MainFrame
+TitleLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Position = UDim2.new(0, 0, 0, 0)
+TitleLabel.Size = UDim2.new(1, 0, 0, 30)
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.Text = "VanxellHub"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+TitleLabel.TextSize = 18
+
+ConfigurationsLabel.Name = "ConfigurationsLabel"
+ConfigurationsLabel.Parent = MainFrame
+ConfigurationsLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+ConfigurationsLabel.BackgroundTransparency = 1
+ConfigurationsLabel.Position = UDim2.new(0, 0, 0.1, 0)
+ConfigurationsLabel.Size = UDim2.new(1, 0, 0, 20)
+ConfigurationsLabel.Font = Enum.Font.Gotham
+ConfigurationsLabel.Text = "Configurations:"
+ConfigurationsLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+ConfigurationsLabel.TextSize = 14
+
+AutoFarmButton.Name = "AutoFarmButton"
+AutoFarmButton.Parent = MainFrame
+AutoFarmButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+AutoFarmButton.BackgroundTransparency = 0.5
+AutoFarmButton.Position = UDim2.new(0, 0, 0.2, 0)
+AutoFarmButton.Size = UDim2.new(1, 0, 0, 20)
+AutoFarmButton.Font = Enum.Font.GothamBold
+AutoFarmButton.Text = "Auto Farm [OFF]"
+AutoFarmButton.TextColor3 = Color3.fromRGB(0, 255, 0)
+AutoFarmButton.TextSize = 14
+
+AutoFarmButton.MouseButton1Click:Connect(function()
+    -- Toggle Auto Farm here
+    if AutoFarmButton.Text == "Auto Farm [OFF]" then
+        AutoFarmButton.Text = "Auto Farm [ON]"
+        AutoFarmButton.TextColor3 = Color3.fromRGB(255, 0, 0)
+        -- Start Auto Farm Code
+    else
+        AutoFarmButton.Text = "Auto Farm [OFF]"
+        AutoFarmButton.TextColor3 = Color3.fromRGB(0, 255, 0)
+        -- Stop Auto Farm Code
+    end
+end)
+
+AutoResetButton.Name = "AutoResetButton"
+AutoResetButton.Parent = MainFrame
+AutoResetButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+AutoResetButton.BackgroundTransparency = 0.5
+AutoResetButton.Position = UDim2.new(0, 0, 0.3, 0)
+AutoResetButton.Size = UDim2.new(1, 0, 0, 20)
+AutoResetButton.Font = Enum.Font.GothamBold
+AutoResetButton.Text = "Auto Reset [OFF]"
+AutoResetButton.TextColor3 = Color3.fromRGB(255, 0, 0)
+AutoResetButton.TextSize = 14
+
+AutoResetButton.MouseButton1Click:Connect(function()
+    -- Toggle Auto Reset here
+    if AutoResetButton.Text == "Auto Reset [OFF]" then
+        AutoResetButton.Text = "Auto Reset [ON]"
+        AutoResetButton.TextColor3 = Color3.fromRGB(0, 255, 0)
+        -- Start Auto Reset Code
+    else
+        AutoResetButton.Text = "Auto Reset [OFF]"
+        AutoResetButton.TextColor3 = Color3.fromRGB(255, 0, 0)
+        -- Stop Auto Reset Code
+    end
+end)
+
+ReturnToMapLabel.Name = "ReturnToMapLabel"
+ReturnToMapLabel.Parent = MainFrame
+ReturnToMapLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+ReturnToMapLabel.BackgroundTransparency = 1
+ReturnToMapLabel.Position = UDim2.new(0, 0, 0.4, 0)
+ReturnToMapLabel.Size = UDim2.new(1, 0, 0, 20)
+ReturnToMapLabel.Font = Enum.Font.Gotham
+ReturnToMapLabel.Text = "Return To:"
+ReturnToMapLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+ReturnToMapLabel.TextSize = 14
+
+for i, location in ipairs(Locations) do
+    local Button = Instance.new("TextButton")
+    Button.Name = location .. "Button"
+    Button.Parent = MainFrame
+    Button.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Button.BackgroundTransparency = 0.5
+    Button.Position = UDim2.new(0, 0, 0.4 + (i * 0.1), 0)
+    Button.Size = UDim2.new(1, 0, 0, 20)
+    Button.Font = Enum.Font.GothamBold
+    Button.Text = location
+    Button.TextColor3 = (location == "Map" and Color3.fromRGB(0, 255, 0)) or Color3.fromRGB(255, 0, 0)
+    Button.TextSize = 14
+
+    Button.MouseButton1Click:Connect(function()
+        -- Teleportation logic for each location
+        print("Teleporting to", location)
+        -- Add teleportation functionality here
+    end)
+end
