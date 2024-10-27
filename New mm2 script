@@ -122,74 +122,43 @@ end)
 -- Shoot Murder Button
 local shootMurderButton = createStyledButton("Shoot Murder", 100)
 shootMurderButton.MouseButton1Click:Connect(function()
-    local shootButton = Instance.new("TextButton")
-    shootButton.Size = UDim2.new(0, 100, 0, 30)
-    shootButton.Position = UDim2.new(1, -110, 0, 10)  -- Position on the right side
-    shootButton.Text = "Auto Shoot"
-    shootButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    shootButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    shootButton.Font = Enum.Font.Gotham
-    shootButton.TextSize = 16
-    shootButton.Parent = ScreenGui
+    -- Example of what happens when you click this button
+    print("Shoot Murder activated.")
+    
+    -- Create a small button that appears on the right side
+    local smallButton = Instance.new("TextButton")
+    smallButton.Size = UDim2.new(0, 50, 0, 50)
+    smallButton.Position = UDim2.new(1, -60, 0.5, -25)  -- Positioned on the right side
+    smallButton.Text = "Shoot"
+    smallButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    smallButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    smallButton.Font = Enum.Font.Gotham
+    smallButton.TextSize = 14
+    smallButton.Parent = ScreenGui
 
-    local shooting = false  -- State to track auto shooting
+    -- Rounded Corners for Small Button
+    local smallButtonCorner = Instance.new("UICorner")
+    smallButtonCorner.CornerRadius = UDim.new(0, 12)
+    smallButtonCorner.Parent = smallButton
 
-    shootButton.MouseButton1Click:Connect(function()
-        shooting = not shooting  -- Toggle shooting state
-        if shooting then
-            print("Auto shooting enabled.")
-            -- Your shooting logic here, e.g., triggering the shoot remote
-            while shooting do
-                wait(0.5)  -- Adjust wait time as necessary
-                local gun = LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun")
-                if gun then
-                    local remote = ReplicatedStorage:FindFirstChild("ShootRemote")  -- Adjust this to the correct remote event
-                    if remote then
-                        remote:FireServer(gun)  -- Fires the gun reference
-                    else
-                        print("ShootRemote not found.")
-                        break  -- Break if the remote doesn't exist
-                    end
-                else
-                    print("You need to grab the gun first.")
-                    break  -- Break if the gun is not found
-                end
-            end
-            print("Auto shooting disabled.")
-        else
-            print("Auto shooting disabled.")
-        end
+    smallButton.MouseButton1Click:Connect(function()
+        print("Murder action executed.")
+        -- Add your shooting functionality here
     end)
 end)
 
--- ESP Functionality
-local function addEsp(player)
-    if player.Character then
-        local highlight = Instance.new("Highlight")
-        highlight.Adornee = player.Character
-        highlight.Parent = player.Character
+-- Function to update the leaderboard safely
+local function UpdateLeaderboard()
+    local playerName = "Mark_ShinyStar"  -- Example player name
+    local player = Players:FindFirstChild(playerName)
 
-        local function getPlayerRole(player)
-            if player.Team then
-                print("[DEBUG] Player Team: " .. player.Team.Name)  -- Print the player's team for debugging
-                if player.Team.Name == "Murderer" then
-                    highlight.FillColor = Color3.fromRGB(255, 0, 0)  -- Murderer (Red)
-                elseif player.Team.Name == "Sheriff" then
-                    highlight.FillColor = Color3.fromRGB(0, 0, 255)  -- Sheriff (Blue)
-                else
-                    highlight.FillColor = Color3.fromRGB(0, 255, 0)  -- Innocent (Green)
-                end
-            else
-                print("[DEBUG] Player has no team.")  -- Handle players without a team
-                highlight.FillColor = Color3.fromRGB(0, 255, 0)  -- Default to Innocent color
-            end
-        end
+    if player then
+        -- Proceed with updating the leaderboard using player data
+        print("Updating leaderboard for " .. playerName)
+    else
+        print("Player " .. playerName .. " not found.")
+    end
+end
 
-        getPlayerRole(player)  -- Get initial role
-        
-        player.CharacterAdded:Connect(function(character)
-            highlight.Adornee = character  -- Update highlight to new character
-            getPlayerRole(player)  -- Update role on character addition
-        end)
-
-        player
+-- Call the function to update the leaderboard
+UpdateLeaderboard()
