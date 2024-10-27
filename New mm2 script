@@ -103,7 +103,7 @@ shootMurderButton.MouseButton1Click:Connect(function()
         autoShootButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         autoShootButton.Font = Enum.Font.Gotham
         autoShootButton.TextSize = 16
-        autoShootButton.Parent = MainFrame
+        autoShootButton.Parent = ScreenGui -- Parent to ScreenGui to keep it visible
 
         -- Automatically shoot if the player is the murderer
         autoShootButton.MouseButton1Click:Connect(function()
@@ -177,4 +177,11 @@ end)
 LocalPlayer.CharacterAdded:Connect(function()
     wait(1)  -- Wait for character to load
     createESP(LocalPlayer)
+end)
+
+-- Auto shoot visibility control
+toggleGuiButton.MouseButton1Click:Connect(function()
+    if autoShootButton then
+        autoShootButton.Visible = not autoShootButton.Visible
+    end
 end)
