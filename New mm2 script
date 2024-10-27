@@ -99,20 +99,18 @@ end
 -- Grab Gun Button
 local grabGunButton = createStyledButton("Grab Gun", 50)
 grabGunButton.MouseButton1Click:Connect(function()
-    -- Allow grabbing the gun only if the sheriff is not alive
     local gun = nil
     for _, item in pairs(Workspace:GetDescendants()) do
         if item:IsA("Tool") and item.Name == "Gun" and item.Parent == Workspace then
             gun = item
-            break  -- Stop searching once we find the gun
+            break
         end
     end
 
     if gun then
-        -- Teleport the player to the gun's position
-        LocalPlayer.Character.HumanoidRootPart.CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)  -- Adjust height if necessary
-        wait(0.1)  -- Small wait to allow teleportation to complete
-        gun.Parent = LocalPlayer.Backpack  -- Move the gun to the player's backpack
+        LocalPlayer.Character.HumanoidRootPart.CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)
+        wait(0.1)
+        gun.Parent = LocalPlayer.Backpack
         print("Gun grabbed successfully.")
     else
         print("No gun found in the workspace.")
@@ -121,66 +119,72 @@ end)
 
 -- Shoot Murder Button
 local shootMurderButton = createStyledButton("Shoot Murder", 100)
-
 shootMurderButton.MouseButton1Click:Connect(function()
-    -- Create a small button that appears on the right side
-    local smallButton = Instance.new("TextButton")
-    smallButton.Size = UDim2.new(0, 100, 0, 30)
-    smallButton.Position = UDim2.new(1, -110, 0.5, -15) -- Adjust positioning as necessary
-    smallButton.Text = "Shoot"
-    smallButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    smallButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    smallButton.Font = Enum.Font.Gotham
-    smallButton.TextSize = 14
-    smallButton.Parent = MainFrame
-
-    -- Rounded Corners for Small Button
-    local smallButtonCorner = UICorner:Clone()
-    smallButtonCorner.Parent = smallButton
-
-    -- Hover Effect for Small Button
-    smallButton.MouseEnter:Connect(function()
-        local hoverTween = TweenService:Create(smallButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(60, 60, 60)})
-        hoverTween:Play()
-    end)
-    smallButton.MouseLeave:Connect(function()
-        local leaveTween = TweenService:Create(smallButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)})
-        leaveTween:Play()
-    end)
-
-    -- Shooting logic can be added here
-    smallButton.MouseButton1Click:Connect(function()
-        -- Implement the shooting logic here
-        local gun = LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun")
-        if gun then
-            print("Shooting...") -- Replace with actual shooting code
-            -- Call remote event or appropriate method to shoot
+    local gun = LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun")
+    if gun then
+        print("Shooting...") 
+        -- Fire a remote event to shoot
+        local shootRemote = ReplicatedStorage:FindFirstChild("ShootRemote")
+        if shootRemote then
+            shootRemote:FireServer()  -- Ensure this is the correct way to shoot in your game
         else
-            print("You need to grab the gun first.")
+            print("ShootRemote not found.")
         end
-    end)
+    else
+        print("You need to grab the gun first.")
+    end
 end)
 
 -- Function to create ESP for a player with color based on role
 local function createESP(player)
-    local espBox = Instance.new("BoxHandleAdornment")
-    espBox.Size = Vector3.new(2, 5, 2) -- Adjust size as necessary
-    espBox.Transparency = 0.5 -- Make it semi-transparent
-    espBox.AlwaysOnTop = true
-    espBox.Parent = player.Character:WaitForChild("HumanoidRootPart") -- Attach to the player's character
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local espBox = Instance.new("BoxHandleAdornment")
+        espBox.Size = Vector3.new(2, 5, 2)
+        espBox.Transparency = 0.5
+        espBox.AlwaysOnTop = true
+        espBox.Parent = player.Character.HumanoidRootPart
 
-    -- Determine color based on role
-    if player:FindFirstChild("PlayerData") and player.PlayerData:FindFirstChild("Role") then
-        local role = player.PlayerData.Role.Value -- Get the player's role
-
-        if role == "Murderer" then
-            espBox.Color3 = Color3.new(1, 0, 0) -- Red for Murderer
-        elseif role == "Sheriff" then
-            espBox.Color3 = Color3.new(0, 0, 1) -- Blue for Sheriff
-        elseif role == "Innocent" then
-            espBox.Color3 = Color3.new(0, 1, 0) -- Green for Innocent
+        if player:FindFirstChild("PlayerData") and player.PlayerData:FindFirstChild("Role") then
+            local role = player.PlayerData.Role.Value
+            if role == "Murderer" then
+                espBox.Color3 = Color3.new(1, 0, 0)
+            elseif role == "Sheriff" then
+                espBox.Color3 = Color3.new(0, 0, 1)
+            elseif role == "Innocent" then
+                espBox.Color3 = Color3.new(0, 1, 0)
+            else
+                espBox.Color3 = Color3.new(1, 1, 1)
+            end
         else
-            espBox.Color3 = Color3.new(1, 1, 1) -- Default color (white) for others
+            espBox.Color3 = Color3.new(1, 1, 1)
         end
     else
-        espBox.Color3 = Color3.new(
+        print("Player does not have a valid character.")
+    end
+end
+
+-- Create ESP for all players
+for _, player in ipairs(Players:GetPlayers()) do
+    createESP(player)
+end
+
+-- Update ESP on player added
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        wait(1)  -- Ensure the character is fully loaded
+        createESP(player)
+    end)
+end)
+
+-- Update ESP on character added
+LocalPlayer.CharacterAdded:Connect(function()
+    wait(1)  -- Ensure the character is fully loaded
+    createESP(LocalPlayer)
+end)
+
+-- Ensure to create ESP for already existing players when the script runs
+for _, player in ipairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+        createESP(player)
+    end
+end
