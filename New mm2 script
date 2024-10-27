@@ -1,183 +1,148 @@
--- Services
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
--- Create ScreenGui
+local Player = Players.LocalPlayer
+local Mouse = Player:GetMouse()
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "VanxellHub"
-ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-
--- Main Frame for Hub
 local MainFrame = Instance.new("Frame")
+
+-- Create Main GUI Frame
 MainFrame.Size = UDim2.new(0, 300, 0, 400)
 MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-MainFrame.BackgroundTransparency = 0.2
-MainFrame.BorderSizePixel = 0
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 MainFrame.Visible = true
 MainFrame.Parent = ScreenGui
-MainFrame.ClipsDescendants = true
 
--- Rounded Corners for MainFrame
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 12)
-UICorner.Parent = MainFrame
+-- Add a corner for the main frame
+local mainFrameCorner = Instance.new("UICorner")
+mainFrameCorner.CornerRadius = UDim.new(0, 10)
+mainFrameCorner.Parent = MainFrame
 
--- Title
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 40)
-Title.Position = UDim2.new(0, 0, 0, 0)
-Title.Text = "Vanxell Hub"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 20
-Title.Parent = MainFrame
+-- Create Toggle Button
+local toggleGuiButton = Instance.new("TextButton")
+toggleGuiButton.Size = UDim2.new(0, 80, 0, 30)
+toggleGuiButton.Position = UDim2.new(0, 10, 0.5, -15)  -- Positioned on the left side
+toggleGuiButton.Text = "Toggle GUI"
+toggleGuiButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+toggleGuiButton.TextColor3 = Color3.fromRGB(0, 255, 127)
+toggleGuiButton.Font = Enum.Font.Gotham
+toggleGuiButton.TextSize = 14
+toggleGuiButton.Parent = ScreenGui
 
--- Function to create styled buttons
-local function createStyledButton(text, positionY)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, -20, 0, 35)
-    button.Position = UDim2.new(0, 10, 0, positionY)
-    button.Text = text
-    button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.Font = Enum.Font.Gotham
-    button.TextSize = 16
-    button.Parent = MainFrame
+-- Rounded corners for Toggle Button
+local toggleButtonCorner = Instance.new("UICorner")
+toggleButtonCorner.CornerRadius = UDim.new(0, 8)
+toggleButtonCorner.Parent = toggleGuiButton
 
-    -- Hover effect
-    button.MouseEnter:Connect(function()
-        button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    end)
-    button.MouseLeave:Connect(function()
-        button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    end)
+-- Create ESP Toggle Button
+local espButton = Instance.new("TextButton")
+espButton.Size = UDim2.new(0, 80, 0, 30)
+espButton.Position = UDim2.new(0, 100, 0.5, -15)  -- Next to toggle button
+espButton.Text = "Toggle ESP"
+espButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+espButton.TextColor3 = Color3.fromRGB(0, 255, 127)
+espButton.Font = Enum.Font.Gotham
+espButton.TextSize = 14
+espButton.Parent = ScreenGui
 
-    return button
-end
+local espEnabled = false
 
--- Grab Gun Button
-local grabGunButton = createStyledButton("Grab Gun", 50)
-grabGunButton.MouseButton1Click:Connect(function()
-    local gun = workspace:FindFirstChild("Gun") or workspace:FindFirstChild("Weapon") -- Adjust based on the gun's name in your game
-    if gun then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)
-        wait(0.1)
-        gun.Parent = LocalPlayer.Backpack
-        print("Gun grabbed successfully.")
-    else
-        print("No gun found.")
-    end
+-- Create Auto-Shoot Button
+local shootMurderButton = Instance.new("TextButton")
+shootMurderButton.Size = UDim2.new(0, 100, 0, 30)
+shootMurderButton.Position = UDim2.new(0, 200, 0.5, -15)  -- Next to ESP button
+shootMurderButton.Text = "Shoot Murder"
+shootMurderButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+shootMurderButton.TextColor3 = Color3.fromRGB(0, 255, 127)
+shootMurderButton.Font = Enum.Font.Gotham
+shootMurderButton.TextSize = 14
+shootMurderButton.Parent = ScreenGui
+
+-- Function to Toggle GUI Visibility
+toggleGuiButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
 end)
 
--- ESP Functionality
-local espEnabled = false
-local espBoxes = {}
-
-local function toggleESP()
+-- Function to Enable/Disable ESP
+espButton.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
-            if espEnabled then
-                local espBox = Instance.new("BoxHandleAdornment")
-                espBox.Size = Vector3.new(2, 5, 2)
-                espBox.AlwaysOnTop = true
-                espBox.ZIndex = 5
-                espBox.Parent = player.Character:WaitForChild("HumanoidRootPart")
+    if espEnabled then
+        espButton.Text = "ESP ON"
+        -- Start ESP
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= Player then
+                local highlight = Instance.new("Highlight", player)
+                highlight.FillColor = Color3.new(1, 0, 0) -- Default to red
+                highlight.OutlineColor = Color3.new(1, 1, 1) -- White outline
 
-                -- Set color based on team
-                if player.Team and player.Team.Name == "Murderer" then
-                    espBox.Color3 = Color3.fromRGB(255, 0, 0) -- Murderer color
-                elseif player.Team and player.Team.Name == "Sheriff" then
-                    espBox.Color3 = Color3.fromRGB(0, 0, 255) -- Sheriff color
-                elseif player.Team and player.Team.Name == "Innocents" then
-                    espBox.Color3 = Color3.fromRGB(0, 255, 0) -- Innocent color
-                else
-                    espBox.Color3 = Color3.fromRGB(255, 255, 0) -- Default color if no team
-                end
-                espBoxes[player.UserId] = espBox
-            else
-                if espBoxes[player.UserId] then
-                    espBoxes[player.UserId]:Destroy()
-                    espBoxes[player.UserId] = nil
-                end
-            end
-        end
-    end
-end
-
--- ESP Button
-local espButton = createStyledButton("Toggle ESP", 100)
-espButton.MouseButton1Click:Connect(toggleESP)
-
--- Auto Shoot Button and Functionality
-local shootMurderButton = createStyledButton("Shoot Murder", 150)
-local autoShootButton
-local autoShootEnabled = false
-
-shootMurderButton.MouseButton1Click:Connect(function()
-    if autoShootButton then
-        autoShootButton.Visible = not autoShootButton.Visible
-    else
-        -- Create small button for auto shooting
-        autoShootButton = Instance.new("TextButton")
-        autoShootButton.Size = UDim2.new(0, 80, 0, 30)
-        autoShootButton.Position = UDim2.new(1, -90, 0, 50) -- Position to the right side
-        autoShootButton.Text = "Auto Shoot"
-        autoShootButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-        autoShootButton.TextColor3 = Color3.fromRGB(0, 255, 127)
-        autoShootButton.Font = Enum.Font.Gotham
-        autoShootButton.TextSize = 14
-        autoShootButton.Parent = MainFrame
-
-        autoShootButton.MouseButton1Click:Connect(function()
-            autoShootEnabled = not autoShootEnabled
-            if autoShootEnabled then
-                local remote = ReplicatedStorage:FindFirstChild("ShootRemote")
-                if not remote then
-                    warn("ShootRemote not found in ReplicatedStorage.")
-                    autoShootEnabled = false
-                    return
-                end
-
-                -- Start auto shooting
-                while autoShootEnabled do
-                    wait(0.5)  -- Adjust as needed
-                    local gun = LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun")
-                    if gun and remote then
-                        remote:FireServer() -- Fires the gun
-                        print("Shooting...")
-                    else
-                        print("No gun found in backpack or character.")
+                -- Color based on player role
+                if player:FindFirstChild("PlayerStats") then
+                    local role = player.PlayerStats.Role.Value -- Assuming this property exists
+                    if role == "Murderer" then
+                        highlight.FillColor = Color3.new(1, 0, 0) -- Red for Murderer
+                    elseif role == "Sheriff" then
+                        highlight.FillColor = Color3.new(0, 0, 1) -- Blue for Sheriff
+                    elseif role == "Innocent" then
+                        highlight.FillColor = Color3.new(0, 1, 0) -- Green for Innocent
                     end
                 end
             end
-        end)
-    end
-end)
-
--- Ensure ESP is correctly applied on character added
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function(character)
-        if espEnabled then
-            toggleESP() -- Reapply ESP
         end
-    end)
-end)
-
--- Clean up ESP on player removal
-Players.PlayerRemoving:Connect(function(player)
-    if espBoxes[player.UserId] then
-        espBoxes[player.UserId]:Destroy()
-        espBoxes[player.UserId] = nil
+    else
+        espButton.Text = "Toggle ESP"
+        -- Remove ESP
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= Player then
+                local highlight = player:FindFirstChildOfClass("Highlight")
+                if highlight then
+                    highlight:Destroy()
+                end
+            end
+        end
     end
 end)
 
--- Initial ESP check for LocalPlayer's character
-LocalPlayer.CharacterAdded:Connect(function(character)
-    if espEnabled then
-        toggleESP() -- Reapply ESP for local player
+-- Function to Auto-Shoot Murder
+local autoShootEnabled = false
+local shootButton
+
+shootMurderButton.MouseButton1Click:Connect(function()
+    autoShootEnabled = not autoShootEnabled
+    if autoShootEnabled then
+        shootMurderButton.Text = "Auto Shooting"
+        -- Create an Auto-Shoot Button
+        shootButton = Instance.new("TextButton")
+        shootButton.Size = UDim2.new(0, 100, 0, 30)
+        shootButton.Position = UDim2.new(1, -110, 0.5, -15)  -- Positioned on the right side
+        shootButton.Text = "Shooting..."
+        shootButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        shootButton.TextColor3 = Color3.fromRGB(0, 255, 127)
+        shootButton.Font = Enum.Font.Gotham
+        shootButton.TextSize = 14
+        shootButton.Parent = ScreenGui
+
+        -- Auto-shoot logic (Example)
+        while autoShootEnabled do
+            -- Check if player is a Murderer
+            if Player:FindFirstChild("PlayerStats") and Player.PlayerStats.Role.Value == "Murderer" then
+                -- Find a target
+                for _, target in ipairs(Players:GetPlayers()) do
+                    if target ~= Player and target:FindFirstChild("PlayerStats") then
+                        -- Shooting Logic Here (placeholder)
+                        -- You can use RemoteEvents to trigger actual shooting in the game
+                        print("Shooting", target.Name)
+                        wait(1) -- Wait time between shots
+                        break -- Remove break if you want to shoot at all targets
+                    end
+                end
+            end
+            wait(0.1) -- Control the frequency of the shooting check
+        end
+    else
+        shootMurderButton.Text = "Shoot Murder"
+        if shootButton then
+            shootButton:Destroy() -- Remove the auto-shoot button when not active
+        end
     end
 end)
+
+ScreenGui.Parent = Player.PlayerGui
