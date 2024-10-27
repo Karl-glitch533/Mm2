@@ -158,43 +158,33 @@ shootMurderButton.MouseButton1Click:Connect(function()
 end)
 
 -- ESP Functionality
+local function getPlayerRole(player)
+    -- This function should return the player's role based on the game logic.
+    -- Replace this with the actual method of getting the player's role in your game.
+    if player.Team and player.Team.Name == "Murderer" then
+        return "Murderer"
+    elseif player.Team and player.Team.Name == "Sheriff" then
+        return "Sheriff"
+    else
+        return "Innocent"
+    end
+end
+
 local function createESP(player)
+    local espColor
+    local role = getPlayerRole(player)
+
+    if role == "Murderer" then
+        espColor = Color3.fromRGB(255, 0, 0)  -- Red for Murderers
+    elseif role == "Sheriff" then
+        espColor = Color3.fromRGB(0, 0, 255)  -- Blue for Sheriffs
+    else
+        espColor = Color3.fromRGB(0, 255, 0)  -- Green for Innocents
+    end
+
     local espBox = Instance.new("BoxHandleAdornment")
     espBox.Size = Vector3.new(4, 6, 2)  -- Size of the ESP box
-    espBox.Color3 = Color3.fromRGB(0, 255, 0)  -- Color of the ESP
+    espBox.Color3 = espColor  -- Set ESP color based on role
     espBox.AlwaysOnTop = true
     espBox.ZIndex = 2
     espBox.Adornee = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-    
-    -- Adding the ESP to the player
-    espBox.Parent = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-    
-    return espBox
-end
-
--- Function to update ESP for all players
-local function updateESP()
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            createESP(player)
-        end
-    end
-end
-
--- Updating ESP when a new player joins or leaves
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function()
-        wait(1)  -- Wait for the character to fully load
-        createESP(player)
-    end)
-end)
-
-Players.PlayerRemoving:Connect(function(player)
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        local espBox = player.Character:FindFirstChildOfClass("BoxHandleAdornment")
-        if espBox then espBox:Destroy() end
-    end
-end)
-
--- Initial ESP update for all players
-updateESP()
