@@ -99,20 +99,18 @@ end
 -- Grab Gun Button
 local grabGunButton = createStyledButton("Grab Gun", 50)
 grabGunButton.MouseButton1Click:Connect(function()
-    -- Allow grabbing the gun only if the sheriff is not alive
     local gun = nil
     for _, item in pairs(Workspace:GetDescendants()) do
         if item:IsA("Tool") and item.Name == "Gun" and item.Parent == Workspace then
             gun = item
-            break  -- Stop searching once we find the gun
+            break
         end
     end
 
     if gun then
-        -- Teleport the player to the gun's position
-        LocalPlayer.Character.HumanoidRootPart.CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)  -- Adjust height if necessary
-        wait(0.1)  -- Small wait to allow teleportation to complete
-        gun.Parent = LocalPlayer.Backpack  -- Move the gun to the player's backpack
+        LocalPlayer.Character.HumanoidRootPart.CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)
+        wait(0.1)
+        gun.Parent = LocalPlayer.Backpack
         print("Gun grabbed successfully.")
     else
         print("No gun found in the workspace.")
@@ -121,23 +119,23 @@ end)
 
 -- Silent Shoot Button
 local silentShootButton = createStyledButton("Silent Shoot", 100)
-local shooting = false  -- State to track auto shooting
+local shooting = false
 
 silentShootButton.MouseButton1Click:Connect(function()
     if LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun") then
-        shooting = not shooting  -- Toggle shooting state
+        shooting = not shooting
         if shooting then
             local gun = LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun")
             if gun then
                 print("Silent shooting enabled.")
-                while shooting do  -- Continue shooting while toggled on
-                    wait(0.5)  -- Adjust wait time as necessary
-                    local remote = ReplicatedStorage:FindFirstChild("ShootRemote")  -- Adjust this to the correct remote event
+                while shooting do
+                    wait(0.5)
+                    local remote = ReplicatedStorage:FindFirstChild("ShootRemote")
                     if remote then
-                        remote:FireServer(gun)  -- Fires the gun reference
+                        remote:FireServer(gun)
                     else
                         print("ShootRemote not found.")
-                        break  -- Break if the remote doesn't exist
+                        break
                     end
                 end
                 print("Silent shooting disabled.")
@@ -147,5 +145,54 @@ silentShootButton.MouseButton1Click:Connect(function()
         end
     else
         print("You need to grab the gun first.")
+    end
+end)
+
+-- ESP Functionality
+local function addEsp(player)
+    local highlight = Instance.new("Highlight")
+    highlight.Adornee = player.Character or player.CharacterAdded:Wait()
+    highlight.FillTransparency = 0.5
+    highlight.OutlineTransparency = 0.3
+    highlight.Parent = player.Character
+
+    local function updateRole()
+        if player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife") then
+            highlight.FillColor = Color3.fromRGB(255, 0, 0)  -- Murderer (Red)
+        elseif player.Backpack:FindFirstChild("Gun") or player.Character:FindFirstChild("Gun") then
+            highlight.FillColor = Color3.fromRGB(0, 0, 255)  -- Sheriff (Blue)
+        else
+            highlight.FillColor = Color3.fromRGB(0, 255, 0)  -- Innocent (Green)
+        end
+    end
+
+    player.Backpack.ChildAdded:Connect(updateRole)
+    player.Character.DescendantAdded:Connect(updateRole)
+    player.CharacterAdded:Connect(function(character)
+        highlight.Adornee = character
+        updateRole()
+    end)
+
+    updateRole()
+end
+
+for _, player in pairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+        addEsp(player)
+    end
+end
+
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+        wait(1)
+        addEsp(player)
+    end)
+end)
+
+game:GetService("ReplicatedStorage").RoundEnded.OnClientEvent:Connect(function()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            addEsp(player)
+        end
     end
 end)
