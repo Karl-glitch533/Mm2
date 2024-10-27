@@ -2,7 +2,6 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
 
 -- Create ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
@@ -16,7 +15,7 @@ MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
 MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 MainFrame.BackgroundTransparency = 0.2
 MainFrame.BorderSizePixel = 0
-MainFrame.Visible = false
+MainFrame.Visible = true -- Set to true for initial testing
 MainFrame.Parent = ScreenGui
 MainFrame.ClipsDescendants = true
 
@@ -35,22 +34,6 @@ Title.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 20
 Title.Parent = MainFrame
-
--- Toggle Button
-local toggleGuiButton = Instance.new("TextButton")
-toggleGuiButton.Size = UDim2.new(0, 80, 0, 30)
-toggleGuiButton.Position = UDim2.new(0, 10, 0.5, -15)
-toggleGuiButton.Text = "Toggle GUI"
-toggleGuiButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-toggleGuiButton.TextColor3 = Color3.fromRGB(0, 255, 127)
-toggleGuiButton.Font = Enum.Font.Gotham
-toggleGuiButton.TextSize = 14
-toggleGuiButton.Parent = ScreenGui
-
--- Toggle visibility of the main frame
-toggleGuiButton.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible
-end)
 
 -- Function to create styled buttons
 local function createStyledButton(text, positionY)
@@ -78,7 +61,7 @@ end
 -- Grab Gun Button
 local grabGunButton = createStyledButton("Grab Gun", 50)
 grabGunButton.MouseButton1Click:Connect(function()
-    local gun = Workspace:FindFirstChild("Gun")
+    local gun = workspace:FindFirstChild("Gun") or workspace:FindFirstChild("Weapon") -- Adjust based on the gun's name in your game
     if gun then
         LocalPlayer.Character.HumanoidRootPart.CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)
         wait(0.1)
@@ -89,16 +72,15 @@ grabGunButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- ESP Button
-local espButton = createStyledButton("Toggle ESP", 100)
+-- ESP Functionality
 local espEnabled = false
 local espBoxes = {}
 
-espButton.MouseButton1Click:Connect(function()
+local function toggleESP()
     espEnabled = not espEnabled
-    if espEnabled then
-        for _, player in pairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Character then
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            if espEnabled then
                 local espBox = Instance.new("BoxHandleAdornment")
                 espBox.Size = Vector3.new(2, 5, 2)
                 espBox.AlwaysOnTop = true
@@ -106,26 +88,41 @@ espButton.MouseButton1Click:Connect(function()
                 espBox.Parent = player.Character:WaitForChild("HumanoidRootPart")
 
                 -- Set color based on team
-                if player.Team.Name == "Murderer" then
+                if player.Team and player.Team.Name == "Murderer" then
                     espBox.Color3 = Color3.fromRGB(255, 0, 0) -- Murderer color
-                elseif player.Team.Name == "Sheriff" then
+                elseif player.Team and player.Team.Name == "Sheriff" then
                     espBox.Color3 = Color3.fromRGB(0, 0, 255) -- Sheriff color
-                elseif player.Team.Name == "Innocents" then
+                elseif player.Team and player.Team.Name == "Innocents" then
                     espBox.Color3 = Color3.fromRGB(0, 255, 0) -- Innocent color
+                else
+                    espBox.Color3 = Color3.fromRGB(255, 255, 0) -- Default color if no team
                 end
                 espBoxes[player.UserId] = espBox
+            else
+                if espBoxes[player.UserId] then
+                    espBoxes[player.UserId]:Destroy()
+                    espBoxes[player.UserId] = nil
+                end
             end
         end
-    else
-        for _, espBox in pairs(espBoxes) do
-            espBox:Destroy()
-        end
-        espBoxes = {}
     end
-end)
+end
+
+-- ESP Button
+local espButton = createStyledButton("Toggle ESP", 100)
+espButton.MouseButton1Click:Connect(toggleESP)
 
 -- Auto Shoot Button
-local shootMurderButton = createStyledButton("Shoot Murder", 150)
+local shootMurderButton = Instance.new("TextButton")
+shootMurderButton.Size = UDim2.new(0, 80, 0, 30)
+shootMurderButton.Position = UDim2.new(1, -90, 0, 50) -- Position to the right side
+shootMurderButton.Text = "Auto Shoot"
+shootMurderButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+shootMurderButton.TextColor3 = Color3.fromRGB(0, 255, 127)
+shootMurderButton.Font = Enum.Font.Gotham
+shootMurderButton.TextSize = 14
+shootMurderButton.Parent = MainFrame
+
 local autoShootEnabled = false
 
 shootMurderButton.MouseButton1Click:Connect(function()
@@ -156,26 +153,9 @@ end)
 Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function(character)
         if espEnabled then
-            local espBox = Instance.new("BoxHandleAdornment")
-            espBox.Size = Vector3.new(2, 5, 2)
-            espBox.AlwaysOnTop = true
-            espBox.ZIndex = 5
-            espBox.Parent = character:WaitForChild("HumanoidRootPart")
-            espBoxes[player.UserId] = espBox
+            toggleESP() -- Reapply ESP
         end
     end)
-end)
-
--- Ensure ESP and auto-shoot functions work on character respawn
-LocalPlayer.CharacterAdded:Connect(function(character)
-    if espEnabled then
-        local espBox = Instance.new("BoxHandleAdornment")
-        espBox.Size = Vector3.new(2, 5, 2)
-        espBox.AlwaysOnTop = true
-        espBox.ZIndex = 5
-        espBox.Parent = character:WaitForChild("HumanoidRootPart")
-        espBoxes[LocalPlayer.UserId] = espBox
-    end
 end)
 
 -- Clean up ESP on player removal
@@ -183,5 +163,12 @@ Players.PlayerRemoving:Connect(function(player)
     if espBoxes[player.UserId] then
         espBoxes[player.UserId]:Destroy()
         espBoxes[player.UserId] = nil
+    end
+end)
+
+-- Initial ESP check for LocalPlayer's character
+LocalPlayer.CharacterAdded:Connect(function(character)
+    if espEnabled then
+        toggleESP() -- Reapply ESP for local player
     end
 end)
