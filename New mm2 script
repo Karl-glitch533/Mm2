@@ -99,8 +99,6 @@ end
 -- Grab Gun Button
 local grabGunButton = createStyledButton("Grab Gun", 50)
 grabGunButton.MouseButton1Click:Connect(function()
-    print("[DEBUG] Grab Gun button clicked")  -- Debug checkpoint
-
     -- Allow grabbing the gun only if the sheriff is not alive
     local gun = nil
     for _, item in pairs(Workspace:GetDescendants()) do
@@ -111,80 +109,95 @@ grabGunButton.MouseButton1Click:Connect(function()
     end
 
     if gun then
-        print("[DEBUG] Gun found, attempting teleport")  -- Debug checkpoint
         -- Teleport the player to the gun's position
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            LocalPlayer.Character.HumanoidRootPart.CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)  -- Adjust height if necessary
-            wait(0.1)  -- Small wait to allow teleportation to complete
-            gun.Parent = LocalPlayer.Backpack  -- Move the gun to the player's backpack
-            print("Gun grabbed successfully.")
-        else
-            print("[ERROR] HumanoidRootPart not found.")
-        end
+        LocalPlayer.Character.HumanoidRootPart.CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)  -- Adjust height if necessary
+        wait(0.1)  -- Small wait to allow teleportation to complete
+        gun.Parent = LocalPlayer.Backpack  -- Move the gun to the player's backpack
+        print("Gun grabbed successfully.")
     else
         print("No gun found in the workspace.")
     end
 end)
 
--- Shoot Murder Button with Floating Button Activation
+-- Shoot Murder Button
 local shootMurderButton = createStyledButton("Shoot Murder", 100)
 shootMurderButton.MouseButton1Click:Connect(function()
-    print("[DEBUG] Shoot Murder button clicked")  -- Debug checkpoint
-    local smallButton = Instance.new("TextButton")
-    smallButton.Size = UDim2.new(0, 60, 0, 60)
-    smallButton.Position = UDim2.new(1, -70, 0.5, -30)
-    smallButton.Text = "Shoot"
-    smallButton.BackgroundColor3 = Color3.fromRGB(255, 69, 0)
-    smallButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    smallButton.Font = Enum.Font.GothamBold
-    smallButton.TextSize = 18
-    smallButton.Parent = ScreenGui
+    local shootButton = Instance.new("TextButton")
+    shootButton.Size = UDim2.new(0, 100, 0, 30)
+    shootButton.Position = UDim2.new(1, -110, 0, 10)  -- Position on the right side
+    shootButton.Text = "Auto Shoot"
+    shootButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    shootButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    shootButton.Font = Enum.Font.Gotham
+    shootButton.TextSize = 16
+    shootButton.Parent = ScreenGui
 
-    smallButton.MouseButton1Click:Connect(function()
-        -- Shooting logic (assuming the gun is in the backpack)
-        local gun = LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun")
-        if gun then
-            print("[DEBUG] Shooting with Gun")  -- Debug checkpoint
-            local remote = ReplicatedStorage:FindFirstChild("ShootRemote")  -- Adjust this to the correct remote event
-            if remote then
-                remote:FireServer(gun)  -- Fires the gun reference
-            else
-                print("[ERROR] ShootRemote not found.")
+    local shooting = false  -- State to track auto shooting
+
+    shootButton.MouseButton1Click:Connect(function()
+        shooting = not shooting  -- Toggle shooting state
+        if shooting then
+            print("Auto shooting enabled.")
+            -- Your shooting logic here, e.g., triggering the shoot remote
+            while shooting do
+                wait(0.5)  -- Adjust wait time as necessary
+                local gun = LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun")
+                if gun then
+                    local remote = ReplicatedStorage:FindFirstChild("ShootRemote")  -- Adjust this to the correct remote event
+                    if remote then
+                        remote:FireServer(gun)  -- Fires the gun reference
+                    else
+                        print("ShootRemote not found.")
+                        break  -- Break if the remote doesn't exist
+                    end
+                else
+                    print("You need to grab the gun first.")
+                    break  -- Break if the gun is not found
+                end
             end
+            print("Auto shooting disabled.")
         else
-            print("[ERROR] You need to grab the gun first.")
+            print("Auto shooting disabled.")
         end
     end)
 end)
 
 -- ESP Functionality
-local function getPlayerRole(player)
-    -- This function should return the player's role based on the game logic.
-    -- Replace this with the actual method of getting the player's role in your game.
-    if player.Team and player.Team.Name == "Murderer" then
-        return "Murderer"
-    elseif player.Team and player.Team.Name == "Sheriff" then
-        return "Sheriff"
-    else
-        return "Innocent"
+local function addEsp(player)
+    if player.Character then
+        local highlight = Instance.new("Highlight")
+        highlight.Adornee = player.Character
+        highlight.Parent = player.Character
+
+        local function getPlayerRole(player)
+            if player.Team then
+                print("[DEBUG] Player Team: " .. player.Team.Name)  -- Print the player's team for debugging
+                if player.Team.Name == "Murderer" then
+                    highlight.FillColor = Color3.fromRGB(255, 0, 0)  -- Murderer (Red)
+                elseif player.Team.Name == "Sheriff" then
+                    highlight.FillColor = Color3.fromRGB(0, 0, 255)  -- Sheriff (Blue)
+                else
+                    highlight.FillColor = Color3.fromRGB(0, 255, 0)  -- Innocent (Green)
+                end
+            else
+                print("[DEBUG] Player has no team.")  -- Handle players without a team
+                highlight.FillColor = Color3.fromRGB(0, 255, 0)  -- Default to Innocent color
+            end
+        end
+
+        getPlayerRole(player)  -- Get initial role
+        
+        player.CharacterAdded:Connect(function(character)
+            highlight.Adornee = character  -- Update highlight to new character
+            getPlayerRole(player)  -- Update role on character addition
+        end)
+
+        player.Backpack.ChildAdded:Connect(getPlayerRole)
+        player.Character.DescendantAdded:Connect(getPlayerRole)
     end
 end
 
-local function createESP(player)
-    local espColor
-    local role = getPlayerRole(player)
-
-    if role == "Murderer" then
-        espColor = Color3.fromRGB(255, 0, 0)  -- Red for Murderers
-    elseif role == "Sheriff" then
-        espColor = Color3.fromRGB(0, 0, 255)  -- Blue for Sheriffs
-    else
-        espColor = Color3.fromRGB(0, 255, 0)  -- Green for Innocents
-    end
-
-    local espBox = Instance.new("BoxHandleAdornment")
-    espBox.Size = Vector3.new(4, 6, 2)  -- Size of the ESP box
-    espBox.Color3 = espColor  -- Set ESP color based on role
-    espBox.AlwaysOnTop = true
-    espBox.ZIndex = 2
-    espBox.Adornee = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+-- Initial ESP for existing players
+for _, player in pairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+        addEsp(player)
