@@ -110,10 +110,14 @@ grabGunButton.MouseButton1Click:Connect(function()
 
     if gun then
         -- Teleport the player to the gun's position
-        LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)  -- Adjust height if necessary
-        wait(0.1)  -- Small wait to allow teleportation to complete
-        gun.Parent = LocalPlayer.Backpack  -- Move the gun to the player's backpack
-        print("Gun grabbed successfully.")
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)  -- Adjust height if necessary
+            wait(0.1)  -- Small wait to allow teleportation to complete
+            gun.Parent = LocalPlayer.Backpack  -- Move the gun to the player's backpack
+            print("Gun grabbed successfully.")
+        else
+            print("Character or HumanoidRootPart not found.")
+        end
     else
         print("No gun found in the workspace.")
     end
@@ -162,3 +166,12 @@ end
 
 -- Call the function to update the leaderboard
 UpdateLeaderboard()
+
+-- Add pcall to catch potential errors
+local success, err = pcall(function()
+    -- Your code that may throw errors goes here
+end)
+
+if not success then
+    print("Error occurred: " .. err)
+end
