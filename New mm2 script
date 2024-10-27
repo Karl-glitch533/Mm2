@@ -13,18 +13,16 @@ ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 -- Main Frame for Hub
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 300, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)  -- Centered position
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
 MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 MainFrame.BackgroundTransparency = 0.2
 MainFrame.BorderSizePixel = 0
-MainFrame.Visible = false  -- Set to false initially
+MainFrame.Visible = false
 MainFrame.Parent = ScreenGui
-MainFrame.ClipsDescendants = true
-MainFrame.ZIndex = 2  -- Ensure it appears above other UI elements
 
 -- Rounded Corners for MainFrame
 local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 12)  -- Rounds the corners
+UICorner.CornerRadius = UDim.new(0, 12)
 UICorner.Parent = MainFrame
 
 -- Title
@@ -36,17 +34,12 @@ Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 20
-Title.ZIndex = 2
 Title.Parent = MainFrame
 
--- Rounded Corners for Title
-local titleCorner = UICorner:Clone()
-titleCorner.Parent = Title
-
--- GUI Toggle Button positioned on the left side of the screen
+-- GUI Toggle Button
 local toggleGuiButton = Instance.new("TextButton")
 toggleGuiButton.Size = UDim2.new(0, 80, 0, 30)
-toggleGuiButton.Position = UDim2.new(0, 10, 0.5, -15)  -- Positioned on the left side
+toggleGuiButton.Position = UDim2.new(0, 10, 0.5, -15)
 toggleGuiButton.Text = "Toggle GUI"
 toggleGuiButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 toggleGuiButton.TextColor3 = Color3.fromRGB(0, 255, 127)
@@ -54,19 +47,12 @@ toggleGuiButton.Font = Enum.Font.Gotham
 toggleGuiButton.TextSize = 14
 toggleGuiButton.Parent = ScreenGui
 
--- Rounded Corners for Toggle Button
-local toggleButtonCorner = UICorner:Clone()
-toggleButtonCorner.Parent = toggleGuiButton
-
--- Toggle Main Frame visibility with fade-in/fade-out effect
+-- Toggle Main Frame visibility
 toggleGuiButton.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible  -- Toggle visibility
-    local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut)
-    local tween = TweenService:Create(MainFrame, tweenInfo, {BackgroundTransparency = MainFrame.Visible and 0.2 or 1})
-    tween:Play()
+    MainFrame.Visible = not MainFrame.Visible
 end)
 
--- Function to create a styled button with hover effect
+-- Function to create a styled button
 local function createStyledButton(text, positionY)
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, -20, 0, 35)
@@ -76,21 +62,14 @@ local function createStyledButton(text, positionY)
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
     button.Font = Enum.Font.Gotham
     button.TextSize = 16
-    button.ZIndex = 2
     button.Parent = MainFrame
 
-    -- Rounded Corners for Buttons
-    local buttonCorner = UICorner:Clone()
-    buttonCorner.Parent = button
-
-    -- Hover Effect for Buttons
+    -- Hover Effect
     button.MouseEnter:Connect(function()
-        local hoverTween = TweenService:Create(button, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(60, 60, 60)})
-        hoverTween:Play()
+        button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     end)
     button.MouseLeave:Connect(function()
-        local leaveTween = TweenService:Create(button, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)})
-        leaveTween:Play()
+        button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     end)
 
     return button
@@ -99,14 +78,7 @@ end
 -- Grab Gun Button
 local grabGunButton = createStyledButton("Grab Gun", 50)
 grabGunButton.MouseButton1Click:Connect(function()
-    local gun = nil
-    for _, item in pairs(Workspace:GetDescendants()) do
-        if item:IsA("Tool") and item.Name == "Gun" and item.Parent == Workspace then
-            gun = item
-            break
-        end
-    end
-
+    local gun = Workspace:FindFirstChild("Gun")  -- Adjust the method of finding the gun
     if gun then
         LocalPlayer.Character.HumanoidRootPart.CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)
         wait(0.1)
@@ -120,13 +92,12 @@ end)
 -- Shoot Murder Button
 local shootMurderButton = createStyledButton("Shoot Murder", 100)
 shootMurderButton.MouseButton1Click:Connect(function()
-    local gun = LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun")
+    local gun = LocalPlayer.Backpack:FindFirstChild("Gun")
     if gun then
-        print("Shooting...") 
-        -- Fire a remote event to shoot
-        local shootRemote = ReplicatedStorage:FindFirstChild("ShootRemote")
+        print("Shooting...")
+        local shootRemote = ReplicatedStorage:FindFirstChild("ShootRemote")  -- Ensure this remote event exists
         if shootRemote then
-            shootRemote:FireServer()  -- Ensure this is the correct way to shoot in your game
+            shootRemote:FireServer()  -- Fire the shooting event
         else
             print("ShootRemote not found.")
         end
@@ -135,56 +106,58 @@ shootMurderButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Function to create ESP for a player with color based on role
+-- Function to create ESP for a player
 local function createESP(player)
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        local espBox = Instance.new("BoxHandleAdornment")
-        espBox.Size = Vector3.new(2, 5, 2)
-        espBox.Transparency = 0.5
-        espBox.AlwaysOnTop = true
-        espBox.Parent = player.Character.HumanoidRootPart
+    player.CharacterAdded:Connect(function(character)
+        wait(1)  -- Wait for character to load
+        if character:FindFirstChild("HumanoidRootPart") then
+            local espBox = Instance.new("BoxHandleAdornment")
+            espBox.Size = Vector3.new(2, 5, 2)
+            espBox.Transparency = 0.5
+            espBox.AlwaysOnTop = true
+            espBox.Parent = character.HumanoidRootPart
 
-        if player:FindFirstChild("PlayerData") and player.PlayerData:FindFirstChild("Role") then
-            local role = player.PlayerData.Role.Value
-            if role == "Murderer" then
-                espBox.Color3 = Color3.new(1, 0, 0)
-            elseif role == "Sheriff" then
-                espBox.Color3 = Color3.new(0, 0, 1)
-            elseif role == "Innocent" then
-                espBox.Color3 = Color3.new(0, 1, 0)
+            -- Set color based on role
+            if player:FindFirstChild("PlayerData") and player.PlayerData:FindFirstChild("Role") then
+                local role = player.PlayerData.Role.Value
+                if role == "Murderer" then
+                    espBox.Color3 = Color3.new(1, 0, 0)  -- Red
+                elseif role == "Sheriff" then
+                    espBox.Color3 = Color3.new(0, 0, 1)  -- Blue
+                elseif role == "Innocent" then
+                    espBox.Color3 = Color3.new(0, 1, 0)  -- Green
+                else
+                    espBox.Color3 = Color3.new(1, 1, 1)  -- White (default)
+                end
             else
-                espBox.Color3 = Color3.new(1, 1, 1)
+                espBox.Color3 = Color3.new(1, 1, 1)  -- White (default)
             end
-        else
-            espBox.Color3 = Color3.new(1, 1, 1)
         end
-    else
-        print("Player does not have a valid character.")
+    end)
+
+    -- Call ESP for existing characters
+    if player.Character then
+        player.CharacterAdded:Fire()
     end
 end
 
--- Create ESP for all players
-for _, player in ipairs(Players:GetPlayers()) do
-    createESP(player)
-end
-
--- Update ESP on player added
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function()
-        wait(1)  -- Ensure the character is fully loaded
-        createESP(player)
-    end)
-end)
-
--- Update ESP on character added
-LocalPlayer.CharacterAdded:Connect(function()
-    wait(1)  -- Ensure the character is fully loaded
-    createESP(LocalPlayer)
-end)
-
--- Ensure to create ESP for already existing players when the script runs
+-- ESP for all players
 for _, player in ipairs(Players:GetPlayers()) do
     if player ~= LocalPlayer then
         createESP(player)
     end
 end
+
+-- Update ESP on player added
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        wait(1)  -- Wait for character to load
+        createESP(player)
+    end)
+end)
+
+-- Update ESP on local player's character added
+LocalPlayer.CharacterAdded:Connect(function()
+    wait(1)  -- Wait for character to load
+    createESP(LocalPlayer)
+end)
