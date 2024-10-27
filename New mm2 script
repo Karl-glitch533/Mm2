@@ -3,6 +3,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
 
 -- ScreenGui setup
 local ScreenGui = Instance.new("ScreenGui")
@@ -13,46 +14,90 @@ ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 300, 0, 400)
 MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)  -- Centered position
-MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-MainFrame.BorderColor3 = Color3.fromRGB(0, 255, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.BackgroundTransparency = 0.2
+MainFrame.BorderSizePixel = 0
 MainFrame.Visible = false  -- Set to false initially
 MainFrame.Parent = ScreenGui
+MainFrame.ClipsDescendants = true
+MainFrame.ZIndex = 2  -- Ensure it appears above other UI elements
+
+-- Rounded Corners for MainFrame
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)  -- Rounds the corners
+UICorner.Parent = MainFrame
 
 -- Title
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Size = UDim2.new(1, 0, 0, 40)
 Title.Position = UDim2.new(0, 0, 0, 0)
 Title.Text = "Vanxell Hub"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-Title.BorderColor3 = Color3.fromRGB(0, 255, 0)
+Title.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 20
+Title.ZIndex = 2
 Title.Parent = MainFrame
+
+-- Rounded Corners for Title
+local titleCorner = UICorner:Clone()
+titleCorner.Parent = Title
 
 -- GUI Toggle Button positioned on the left side of the screen
 local toggleGuiButton = Instance.new("TextButton")
 toggleGuiButton.Size = UDim2.new(0, 80, 0, 30)
 toggleGuiButton.Position = UDim2.new(0, 10, 0.5, -15)  -- Positioned on the left side
 toggleGuiButton.Text = "Toggle GUI"
-toggleGuiButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-toggleGuiButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
-toggleGuiButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleGuiButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+toggleGuiButton.TextColor3 = Color3.fromRGB(0, 255, 127)
+toggleGuiButton.Font = Enum.Font.Gotham
+toggleGuiButton.TextSize = 14
 toggleGuiButton.Parent = ScreenGui
 
--- Toggle Main Frame visibility with the button
+-- Rounded Corners for Toggle Button
+local toggleButtonCorner = UICorner:Clone()
+toggleButtonCorner.Parent = toggleGuiButton
+
+-- Toggle Main Frame visibility with fade-in/fade-out effect
 toggleGuiButton.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible  -- Toggle visibility
+    local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut)
+    local tween = TweenService:Create(MainFrame, tweenInfo, {BackgroundTransparency = MainFrame.Visible and 0.2 or 1})
+    tween:Play()
 end)
 
--- Grab Gun Button
-local grabGunButton = Instance.new("TextButton")
-grabGunButton.Size = UDim2.new(1, -20, 0, 30)
-grabGunButton.Position = UDim2.new(0, 10, 0, 50)
-grabGunButton.Text = "Grab Gun"
-grabGunButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-grabGunButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
-grabGunButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-grabGunButton.Parent = MainFrame
+-- Function to create a styled button with hover effect
+local function createStyledButton(text, positionY)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -20, 0, 35)
+    button.Position = UDim2.new(0, 10, 0, positionY)
+    button.Text = text
+    button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.Font = Enum.Font.Gotham
+    button.TextSize = 16
+    button.ZIndex = 2
+    button.Parent = MainFrame
 
+    -- Rounded Corners for Buttons
+    local buttonCorner = UICorner:Clone()
+    buttonCorner.Parent = button
+
+    -- Hover Effect for Buttons
+    button.MouseEnter:Connect(function()
+        local hoverTween = TweenService:Create(button, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(60, 60, 60)})
+        hoverTween:Play()
+    end)
+    button.MouseLeave:Connect(function()
+        local leaveTween = TweenService:Create(button, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)})
+        leaveTween:Play()
+    end)
+
+    return button
+end
+
+-- Grab Gun Button
+local grabGunButton = createStyledButton("Grab Gun", 50)
 grabGunButton.MouseButton1Click:Connect(function()
     -- Allow grabbing the gun only if the sheriff is not alive
     local gun = nil
@@ -75,15 +120,7 @@ grabGunButton.MouseButton1Click:Connect(function()
 end)
 
 -- Silent Shoot Button
-local silentShootButton = Instance.new("TextButton")
-silentShootButton.Size = UDim2.new(1, -20, 0, 30)
-silentShootButton.Position = UDim2.new(0, 10, 0, 90)
-silentShootButton.Text = "Silent Shoot"
-silentShootButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-silentShootButton.BorderColor3 = Color3.fromRGB(0, 255, 0)
-silentShootButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-silentShootButton.Parent = MainFrame
-
+local silentShootButton = createStyledButton("Silent Shoot", 100)
 local shooting = false  -- State to track auto shooting
 
 silentShootButton.MouseButton1Click:Connect(function()
@@ -110,58 +147,5 @@ silentShootButton.MouseButton1Click:Connect(function()
         end
     else
         print("You need to grab the gun first.")
-    end
-end)
-
--- ESP Functionality (optional for visibility, not requested for fixes)
-local function addEsp(player)
-    if player.Character then
-        local highlight = Instance.new("Highlight")
-        highlight.Adornee = player.Character
-        highlight.Parent = player.Character
-
-        local function updateRole()
-            if player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife") then
-                highlight.FillColor = Color3.fromRGB(255, 0, 0)  -- Murderer (Red)
-            elseif player.Backpack:FindFirstChild("Gun") or player.Character:FindFirstChild("Gun") then
-                highlight.FillColor = Color3.fromRGB(0, 0, 255)  -- Sheriff (Blue)
-            else
-                highlight.FillColor = Color3.fromRGB(0, 255, 0)  -- Innocent (Green)
-            end
-        end
-
-        player.CharacterAdded:Connect(function(character)
-            highlight.Adornee = character  -- Update highlight to new character
-            updateRole()  -- Update role on character addition
-        end)
-
-        player.Backpack.ChildAdded:Connect(updateRole)
-        player.Character.DescendantAdded:Connect(updateRole)
-
-        updateRole()  -- Initial role update
-    end
-end
-
--- Initial ESP for existing players
-for _, player in pairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer then
-        addEsp(player)
-    end
-end
-
--- ESP for new players
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function(character)
-        wait(1)  -- Wait for the character to fully load
-        addEsp(player)
-    end)
-end)
-
--- Repeat ESP when the round ends (optional)
-game:GetService("ReplicatedStorage").RoundEnded:Connect(function()
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            addEsp(player)
-        end
     end
 end)
