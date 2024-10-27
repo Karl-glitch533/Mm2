@@ -15,7 +15,7 @@ MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
 MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 MainFrame.BackgroundTransparency = 0.2
 MainFrame.BorderSizePixel = 0
-MainFrame.Visible = true -- Set to true for initial testing
+MainFrame.Visible = true
 MainFrame.Parent = ScreenGui
 MainFrame.ClipsDescendants = true
 
@@ -112,40 +112,49 @@ end
 local espButton = createStyledButton("Toggle ESP", 100)
 espButton.MouseButton1Click:Connect(toggleESP)
 
--- Auto Shoot Button
-local shootMurderButton = Instance.new("TextButton")
-shootMurderButton.Size = UDim2.new(0, 80, 0, 30)
-shootMurderButton.Position = UDim2.new(1, -90, 0, 50) -- Position to the right side
-shootMurderButton.Text = "Auto Shoot"
-shootMurderButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-shootMurderButton.TextColor3 = Color3.fromRGB(0, 255, 127)
-shootMurderButton.Font = Enum.Font.Gotham
-shootMurderButton.TextSize = 14
-shootMurderButton.Parent = MainFrame
-
+-- Auto Shoot Button and Functionality
+local shootMurderButton = createStyledButton("Shoot Murder", 150)
+local autoShootButton
 local autoShootEnabled = false
 
 shootMurderButton.MouseButton1Click:Connect(function()
-    autoShootEnabled = not autoShootEnabled
-    if autoShootEnabled then
-        local remote = ReplicatedStorage:FindFirstChild("ShootRemote")
-        if not remote then
-            warn("ShootRemote not found in ReplicatedStorage.")
-            autoShootEnabled = false
-            return
-        end
+    if autoShootButton then
+        autoShootButton.Visible = not autoShootButton.Visible
+    else
+        -- Create small button for auto shooting
+        autoShootButton = Instance.new("TextButton")
+        autoShootButton.Size = UDim2.new(0, 80, 0, 30)
+        autoShootButton.Position = UDim2.new(1, -90, 0, 50) -- Position to the right side
+        autoShootButton.Text = "Auto Shoot"
+        autoShootButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        autoShootButton.TextColor3 = Color3.fromRGB(0, 255, 127)
+        autoShootButton.Font = Enum.Font.Gotham
+        autoShootButton.TextSize = 14
+        autoShootButton.Parent = MainFrame
 
-        -- Start auto shooting
-        while autoShootEnabled do
-            wait(0.5)  -- Adjust as needed
-            local gun = LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun")
-            if gun and remote then
-                remote:FireServer() -- Fires the gun
-                print("Shooting...")
-            else
-                print("No gun found in backpack or character.")
+        autoShootButton.MouseButton1Click:Connect(function()
+            autoShootEnabled = not autoShootEnabled
+            if autoShootEnabled then
+                local remote = ReplicatedStorage:FindFirstChild("ShootRemote")
+                if not remote then
+                    warn("ShootRemote not found in ReplicatedStorage.")
+                    autoShootEnabled = false
+                    return
+                end
+
+                -- Start auto shooting
+                while autoShootEnabled do
+                    wait(0.5)  -- Adjust as needed
+                    local gun = LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun")
+                    if gun and remote then
+                        remote:FireServer() -- Fires the gun
+                        print("Shooting...")
+                    else
+                        print("No gun found in backpack or character.")
+                    end
+                end
             end
-        end
+        end)
     end
 end)
 
