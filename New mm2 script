@@ -4,6 +4,14 @@ local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+-- Anti-detect Variables
+local spoofedHumanoidRootPart = LocalPlayer.Character:WaitForChild("HumanoidRootPart"):Clone()
+spoofedHumanoidRootPart.Anchored = true
+spoofedHumanoidRootPart.Transparency = 1
+spoofedHumanoidRootPart.CanCollide = false
+spoofedHumanoidRootPart.Parent = Workspace
 
 -- ScreenGui setup
 local ScreenGui = Instance.new("ScreenGui")
@@ -108,8 +116,10 @@ grabGunButton.MouseButton1Click:Connect(function()
     end
 
     if gun then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)
+        -- Move cloned HumanoidRootPart to the gun's position and set up a teleport
+        spoofedHumanoidRootPart.CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)
         wait(0.1)
+        LocalPlayer.Character.HumanoidRootPart.CFrame = spoofedHumanoidRootPart.CFrame
         gun.Parent = LocalPlayer.Backpack
         print("Gun grabbed successfully.")
     else
@@ -122,11 +132,10 @@ local shootMurderButton = createStyledButton("Shoot Murder", 100)
 local smallShootButton = nil  -- Track small button
 
 shootMurderButton.MouseButton1Click:Connect(function()
-    -- Create a small button on the right side if it doesn’t exist
     if not smallShootButton then
         smallShootButton = Instance.new("TextButton")
         smallShootButton.Size = UDim2.new(0, 60, 0, 30)
-        smallShootButton.Position = UDim2.new(1, -70, 0.5, -15)  -- Positioned on the right side
+        smallShootButton.Position = UDim2.new(1, -70, 0.5, -15)
         smallShootButton.Text = "Shoot"
         smallShootButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
         smallShootButton.TextColor3 = Color3.fromRGB(255, 0, 0)
@@ -134,11 +143,9 @@ shootMurderButton.MouseButton1Click:Connect(function()
         smallShootButton.TextSize = 14
         smallShootButton.Parent = ScreenGui
 
-        -- Rounded Corners for Small Button
         local smallButtonCorner = UICorner:Clone()
         smallButtonCorner.Parent = smallShootButton
 
-        -- Hover Effect for Small Button
         smallShootButton.MouseEnter:Connect(function()
             local hoverTween = TweenService:Create(smallShootButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(60, 0, 0)})
             hoverTween:Play()
@@ -148,13 +155,16 @@ shootMurderButton.MouseButton1Click:Connect(function()
             leaveTween:Play()
         end)
 
-        -- Shoot function for Small Button
         smallShootButton.MouseButton1Click:Connect(function()
             local gun = LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun")
             local shootRemote = ReplicatedStorage:FindFirstChild("ShootRemote")  -- Replace with actual remote event
             if gun and shootRemote then
-                print("Shooting at the murderer!")
-                shootRemote:FireServer(gun)
+                -- Use spawn to break delay and randomize delay slightly to avoid anti-cheat detection
+                spawn(function()
+                    wait(math.random(1, 3) * 0.1)  -- Randomized delay
+                    print("Shooting at the murderer!")
+                    shootRemote:FireServer(gun)
+                end)
             else
                 print("You need to grab the gun first or check if remote exists.")
             end
@@ -171,36 +181,4 @@ local function addEsp(player)
     highlight.Parent = player.Character
 
     local function updateRole()
-        if player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife") then
-            highlight.FillColor = Color3.fromRGB(255, 0, 0)  -- Murderer (Red)
-        elseif player.Backpack:FindFirstChild("Gun") or player.Character:FindFirstChild("Gun") then
-            highlight.FillColor = Color3.fromRGB(0, 0, 255)  -- Sheriff (Blue)
-        else
-            highlight.FillColor = Color3.fromRGB(0, 255, 0)  -- Innocent (Green)
-        end
-    end
-
-    player.Backpack.ChildAdded:Connect(updateRole)
-    player.Character.DescendantAdded:Connect(updateRole)
-    player.CharacterAdded:Connect(function(character)
-        highlight.Adornee = character
-        updateRole()
-    end)
-
-    updateRole()
-end
-
-for _, player in pairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer then
-        addEsp(player)
-    end
-end
-
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function(character)
-        wait(1)
-        addEsp(player)
-    end)
-end)
-
-game:GetService("ReplicatedStorage").RoundEnded
+        if player.Backpack
