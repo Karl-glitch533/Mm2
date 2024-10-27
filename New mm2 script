@@ -3,7 +3,6 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
-local TweenService = game:GetService("TweenService")
 
 -- ScreenGui setup
 local ScreenGui = Instance.new("ScreenGui")
@@ -53,16 +52,16 @@ toggleGuiButton.MouseButton1Click:Connect(function()
 end)
 
 -- Function to create a styled button
-local function createStyledButton(text, positionY)
+local function createStyledButton(text, positionY, parent)
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, -20, 0, 35)
-    button.Position = UDim2.new(0, 10, 0, positionY)
+    button.Size = UDim2.new(0, 120, 0, 35)
+    button.Position = UDim2.new(1, -130, 0, positionY)
     button.Text = text
     button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
     button.Font = Enum.Font.Gotham
     button.TextSize = 16
-    button.Parent = MainFrame
+    button.Parent = parent
 
     -- Hover Effect
     button.MouseEnter:Connect(function()
@@ -76,9 +75,9 @@ local function createStyledButton(text, positionY)
 end
 
 -- Grab Gun Button
-local grabGunButton = createStyledButton("Grab Gun", 50)
+local grabGunButton = createStyledButton("Grab Gun", 50, MainFrame)
 grabGunButton.MouseButton1Click:Connect(function()
-    local gun = Workspace:FindFirstChild("Gun")  -- Adjust the method of finding the gun
+    local gun = Workspace:FindFirstChild("Gun") -- Adjust the method of finding the gun
     if gun then
         LocalPlayer.Character.HumanoidRootPart.CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)
         wait(0.1)
@@ -90,19 +89,38 @@ grabGunButton.MouseButton1Click:Connect(function()
 end)
 
 -- Shoot Murder Button
-local shootMurderButton = createStyledButton("Shoot Murder", 100)
+local shootMurderButton = createStyledButton("Shoot Murder", 100, MainFrame)
+local shootMurderVisible = false
+
 shootMurderButton.MouseButton1Click:Connect(function()
-    local gun = LocalPlayer.Backpack:FindFirstChild("Gun")
-    if gun then
-        print("Shooting...")
-        local shootRemote = ReplicatedStorage:FindFirstChild("ShootRemote")  -- Ensure this remote event exists
-        if shootRemote then
-            shootRemote:FireServer()  -- Fire the shooting event
+    shootMurderVisible = not shootMurderVisible
+    if shootMurderVisible then
+        -- Create the button that appears on the right side for shooting
+        local autoShootButton = Instance.new("TextButton")
+        autoShootButton.Size = UDim2.new(0, 100, 0, 35)
+        autoShootButton.Position = UDim2.new(1, -130, 0, 150) -- Adjust position as needed
+        autoShootButton.Text = "Auto Shoot"
+        autoShootButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        autoShootButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        autoShootButton.Font = Enum.Font.Gotham
+        autoShootButton.TextSize = 16
+        autoShootButton.Parent = MainFrame
+
+        -- Automatically shoot if the player is the murderer
+        local gun = LocalPlayer.Backpack:FindFirstChild("Gun")
+        if gun then
+            local shootRemote = ReplicatedStorage:FindFirstChild("ShootRemote") -- Ensure this remote event exists
+            if shootRemote then
+                autoShootButton.MouseButton1Click:Connect(function()
+                    shootRemote:FireServer()  -- Fire the shooting event
+                    print("Shooting...")
+                end)
+            else
+                print("ShootRemote not found.")
+            end
         else
-            print("ShootRemote not found.")
+            print("You need to grab the gun first.")
         end
-    else
-        print("You need to grab the gun first.")
     end
 end)
 
