@@ -5,7 +5,11 @@ local ConfigurationsLabel = Instance.new("TextLabel")
 local AutoFarmButton = Instance.new("TextButton")
 local AutoResetButton = Instance.new("TextButton")
 local ReturnToMapLabel = Instance.new("TextLabel")
+local CloseButton = Instance.new("TextButton")
 local Locations = {"Lobby", "Void (Safe)", "Voting Map", "Above Map", "Map"}
+
+local autoFarmActive = false
+local autoResetActive = false
 
 -- Properties
 ScreenGui.Name = "VanxellHub"
@@ -19,6 +23,8 @@ MainFrame.Position = UDim2.new(0.1, 0, 0.1, 0)
 MainFrame.Size = UDim2.new(0, 200, 0, 300)
 MainFrame.BorderSizePixel = 2
 MainFrame.BorderColor3 = Color3.fromRGB(0, 255, 0)
+MainFrame.Active = true
+MainFrame.Draggable = true
 
 TitleLabel.Name = "TitleLabel"
 TitleLabel.Parent = MainFrame
@@ -54,15 +60,18 @@ AutoFarmButton.TextColor3 = Color3.fromRGB(0, 255, 0)
 AutoFarmButton.TextSize = 14
 
 AutoFarmButton.MouseButton1Click:Connect(function()
-    -- Toggle Auto Farm here
-    if AutoFarmButton.Text == "Auto Farm [OFF]" then
+    autoFarmActive = not autoFarmActive
+    if autoFarmActive then
         AutoFarmButton.Text = "Auto Farm [ON]"
         AutoFarmButton.TextColor3 = Color3.fromRGB(255, 0, 0)
         -- Start Auto Farm Code
+        print("Auto Farm started")
+        -- Add your auto farm functionality here
     else
         AutoFarmButton.Text = "Auto Farm [OFF]"
         AutoFarmButton.TextColor3 = Color3.fromRGB(0, 255, 0)
         -- Stop Auto Farm Code
+        print("Auto Farm stopped")
     end
 end)
 
@@ -78,15 +87,18 @@ AutoResetButton.TextColor3 = Color3.fromRGB(255, 0, 0)
 AutoResetButton.TextSize = 14
 
 AutoResetButton.MouseButton1Click:Connect(function()
-    -- Toggle Auto Reset here
-    if AutoResetButton.Text == "Auto Reset [OFF]" then
+    autoResetActive = not autoResetActive
+    if autoResetActive then
         AutoResetButton.Text = "Auto Reset [ON]"
         AutoResetButton.TextColor3 = Color3.fromRGB(0, 255, 0)
         -- Start Auto Reset Code
+        print("Auto Reset started")
+        -- Add your auto reset functionality here
     else
         AutoResetButton.Text = "Auto Reset [OFF]"
         AutoResetButton.TextColor3 = Color3.fromRGB(255, 0, 0)
         -- Stop Auto Reset Code
+        print("Auto Reset stopped")
     end
 end)
 
@@ -117,6 +129,22 @@ for i, location in ipairs(Locations) do
     Button.MouseButton1Click:Connect(function()
         -- Teleportation logic for each location
         print("Teleporting to", location)
-        -- Add teleportation functionality here
+        -- Add your teleportation functionality here
+        -- Example: game.Players.LocalPlayer.Character:MoveTo(location.Position)
     end)
 end
+
+-- Close Button
+CloseButton.Name = "CloseButton"
+CloseButton.Parent = MainFrame
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+CloseButton.Position = UDim2.new(0.9, 0, 0, 0)
+CloseButton.Size = UDim2.new(0, 20, 0, 20)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextSize = 14
+
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy() -- Close the GUI
+end)
