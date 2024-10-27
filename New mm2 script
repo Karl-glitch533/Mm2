@@ -117,34 +117,48 @@ grabGunButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Silent Shoot Button
-local silentShootButton = createStyledButton("Silent Shoot", 100)
-local shooting = false
+-- Shoot Murder Button
+local shootMurderButton = createStyledButton("Shoot Murder", 100)
+local smallShootButton = nil  -- Track small button
 
-silentShootButton.MouseButton1Click:Connect(function()
-    if LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun") then
-        shooting = not shooting
-        if shooting then
+shootMurderButton.MouseButton1Click:Connect(function()
+    -- Create a small button on the right side if it doesn’t exist
+    if not smallShootButton then
+        smallShootButton = Instance.new("TextButton")
+        smallShootButton.Size = UDim2.new(0, 60, 0, 30)
+        smallShootButton.Position = UDim2.new(1, -70, 0.5, -15)  -- Positioned on the right side
+        smallShootButton.Text = "Shoot"
+        smallShootButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        smallShootButton.TextColor3 = Color3.fromRGB(255, 0, 0)
+        smallShootButton.Font = Enum.Font.GothamBold
+        smallShootButton.TextSize = 14
+        smallShootButton.Parent = ScreenGui
+
+        -- Rounded Corners for Small Button
+        local smallButtonCorner = UICorner:Clone()
+        smallButtonCorner.Parent = smallShootButton
+
+        -- Hover Effect for Small Button
+        smallShootButton.MouseEnter:Connect(function()
+            local hoverTween = TweenService:Create(smallShootButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(60, 0, 0)})
+            hoverTween:Play()
+        end)
+        smallShootButton.MouseLeave:Connect(function()
+            local leaveTween = TweenService:Create(smallShootButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(30, 30, 30)})
+            leaveTween:Play()
+        end)
+
+        -- Shoot function for Small Button
+        smallShootButton.MouseButton1Click:Connect(function()
             local gun = LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun")
-            if gun then
-                print("Silent shooting enabled.")
-                while shooting do
-                    wait(0.5)
-                    local remote = ReplicatedStorage:FindFirstChild("ShootRemote")
-                    if remote then
-                        remote:FireServer(gun)
-                    else
-                        print("ShootRemote not found.")
-                        break
-                    end
-                end
-                print("Silent shooting disabled.")
+            local shootRemote = ReplicatedStorage:FindFirstChild("ShootRemote")  -- Replace with actual remote event
+            if gun and shootRemote then
+                print("Shooting at the murderer!")
+                shootRemote:FireServer(gun)
+            else
+                print("You need to grab the gun first or check if remote exists.")
             end
-        else
-            print("Silent shooting disabled.")
-        end
-    else
-        print("You need to grab the gun first.")
+        end)
     end
 end)
 
@@ -189,10 +203,4 @@ Players.PlayerAdded:Connect(function(player)
     end)
 end)
 
-game:GetService("ReplicatedStorage").RoundEnded.OnClientEvent:Connect(function()
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            addEsp(player)
-        end
-    end
-end)
+game:GetService("ReplicatedStorage").RoundEnded
