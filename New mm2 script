@@ -140,29 +140,61 @@ shootMurderButton.MouseButton1Click:Connect(function()
     smallButton.TextSize = 18
     smallButton.Parent = ScreenGui
 
-    -- Rounded Corners for the small Shoot button
-    local buttonCorner = UICorner:Clone()
-    buttonCorner.Parent = smallButton
-
-    -- Hover effect for small Shoot button
-    smallButton.MouseEnter:Connect(function()
-        local hoverTween = TweenService:Create(smallButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(255, 99, 71)})
-        hoverTween:Play()
-    end)
-    smallButton.MouseLeave:Connect(function()
-        local leaveTween = TweenService:Create(smallButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(255, 69, 0)})
-        leaveTween:Play()
-    end)
-
     smallButton.MouseButton1Click:Connect(function()
-        print("[DEBUG] Small Shoot button clicked")  -- Debug checkpoint
-        local remote = ReplicatedStorage:FindFirstChild("ShootRemote")
-        
-        if remote then
-            remote:FireServer()
-            print("Shot fired.")
+        -- Shooting logic (assuming the gun is in the backpack)
+        local gun = LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun")
+        if gun then
+            print("[DEBUG] Shooting with Gun")  -- Debug checkpoint
+            local remote = ReplicatedStorage:FindFirstChild("ShootRemote")  -- Adjust this to the correct remote event
+            if remote then
+                remote:FireServer(gun)  -- Fires the gun reference
+            else
+                print("[ERROR] ShootRemote not found.")
+            end
         else
-            print("[ERROR] ShootRemote not found in ReplicatedStorage.")
+            print("[ERROR] You need to grab the gun first.")
         end
     end)
 end)
+
+-- ESP Functionality
+local function createESP(player)
+    local espBox = Instance.new("BoxHandleAdornment")
+    espBox.Size = Vector3.new(4, 6, 2)  -- Size of the ESP box
+    espBox.Color3 = Color3.fromRGB(0, 255, 0)  -- Color of the ESP
+    espBox.AlwaysOnTop = true
+    espBox.ZIndex = 2
+    espBox.Adornee = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    
+    -- Adding the ESP to the player
+    espBox.Parent = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    
+    return espBox
+end
+
+-- Function to update ESP for all players
+local function updateESP()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            createESP(player)
+        end
+    end
+end
+
+-- Updating ESP when a new player joins or leaves
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        wait(1)  -- Wait for the character to fully load
+        createESP(player)
+    end)
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local espBox = player.Character:FindFirstChildOfClass("BoxHandleAdornment")
+        if espBox then espBox:Destroy() end
+    end
+end)
+
+-- Initial ESP update for all players
+updateESP()
