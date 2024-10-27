@@ -90,13 +90,12 @@ end)
 
 -- Shoot Murder Button
 local shootMurderButton = createStyledButton("Shoot Murder", 100, MainFrame)
-local shootMurderVisible = false
+local autoShootButton = nil
 
 shootMurderButton.MouseButton1Click:Connect(function()
-    shootMurderVisible = not shootMurderVisible
-    if shootMurderVisible then
+    if not autoShootButton then
         -- Create the button that appears on the right side for shooting
-        local autoShootButton = Instance.new("TextButton")
+        autoShootButton = Instance.new("TextButton")
         autoShootButton.Size = UDim2.new(0, 100, 0, 35)
         autoShootButton.Position = UDim2.new(1, -130, 0, 150) -- Adjust position as needed
         autoShootButton.Text = "Auto Shoot"
@@ -107,20 +106,20 @@ shootMurderButton.MouseButton1Click:Connect(function()
         autoShootButton.Parent = MainFrame
 
         -- Automatically shoot if the player is the murderer
-        local gun = LocalPlayer.Backpack:FindFirstChild("Gun")
-        if gun then
-            local shootRemote = ReplicatedStorage:FindFirstChild("ShootRemote") -- Ensure this remote event exists
-            if shootRemote then
-                autoShootButton.MouseButton1Click:Connect(function()
+        autoShootButton.MouseButton1Click:Connect(function()
+            local gun = LocalPlayer.Backpack:FindFirstChild("Gun")
+            if gun then
+                local shootRemote = ReplicatedStorage:FindFirstChild("ShootRemote") -- Ensure this remote event exists
+                if shootRemote then
                     shootRemote:FireServer()  -- Fire the shooting event
                     print("Shooting...")
-                end)
+                else
+                    print("ShootRemote not found.")
+                end
             else
-                print("ShootRemote not found.")
+                print("You need to grab the gun first.")
             end
-        else
-            print("You need to grab the gun first.")
-        end
+        end)
     end
 end)
 
@@ -155,7 +154,7 @@ local function createESP(player)
 
     -- Call ESP for existing characters
     if player.Character then
-        player.CharacterAdded:Fire()
+        createESP(player)
     end
 end
 
