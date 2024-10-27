@@ -110,14 +110,10 @@ grabGunButton.MouseButton1Click:Connect(function()
 
     if gun then
         -- Teleport the player to the gun's position
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            LocalPlayer.Character.HumanoidRootPart.CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)  -- Adjust height if necessary
-            wait(0.1)  -- Small wait to allow teleportation to complete
-            gun.Parent = LocalPlayer.Backpack  -- Move the gun to the player's backpack
-            print("Gun grabbed successfully.")
-        else
-            print("Character or HumanoidRootPart not found.")
-        end
+        LocalPlayer.Character.HumanoidRootPart.CFrame = gun.Handle.CFrame * CFrame.new(0, 2, 0)  -- Adjust height if necessary
+        wait(0.1)  -- Small wait to allow teleportation to complete
+        gun.Parent = LocalPlayer.Backpack  -- Move the gun to the player's backpack
+        print("Gun grabbed successfully.")
     else
         print("No gun found in the workspace.")
     end
@@ -125,53 +121,66 @@ end)
 
 -- Shoot Murder Button
 local shootMurderButton = createStyledButton("Shoot Murder", 100)
+
 shootMurderButton.MouseButton1Click:Connect(function()
-    -- Example of what happens when you click this button
-    print("Shoot Murder activated.")
-    
     -- Create a small button that appears on the right side
     local smallButton = Instance.new("TextButton")
-    smallButton.Size = UDim2.new(0, 50, 0, 50)
-    smallButton.Position = UDim2.new(1, -60, 0.5, -25)  -- Positioned on the right side
+    smallButton.Size = UDim2.new(0, 100, 0, 30)
+    smallButton.Position = UDim2.new(1, -110, 0.5, -15) -- Adjust positioning as necessary
     smallButton.Text = "Shoot"
-    smallButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    smallButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     smallButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     smallButton.Font = Enum.Font.Gotham
     smallButton.TextSize = 14
-    smallButton.Parent = ScreenGui
+    smallButton.Parent = MainFrame
 
     -- Rounded Corners for Small Button
-    local smallButtonCorner = Instance.new("UICorner")
-    smallButtonCorner.CornerRadius = UDim.new(0, 12)
+    local smallButtonCorner = UICorner:Clone()
     smallButtonCorner.Parent = smallButton
 
+    -- Hover Effect for Small Button
+    smallButton.MouseEnter:Connect(function()
+        local hoverTween = TweenService:Create(smallButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(60, 60, 60)})
+        hoverTween:Play()
+    end)
+    smallButton.MouseLeave:Connect(function()
+        local leaveTween = TweenService:Create(smallButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)})
+        leaveTween:Play()
+    end)
+
+    -- Shooting logic can be added here
     smallButton.MouseButton1Click:Connect(function()
-        print("Murder action executed.")
-        -- Add your shooting functionality here
+        -- Implement the shooting logic here
+        local gun = LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun")
+        if gun then
+            print("Shooting...") -- Replace with actual shooting code
+            -- Call remote event or appropriate method to shoot
+        else
+            print("You need to grab the gun first.")
+        end
     end)
 end)
 
--- Function to update the leaderboard safely
-local function UpdateLeaderboard()
-    local playerName = "Mark_ShinyStar"  -- Example player name
-    local player = Players:FindFirstChild(playerName)
+-- Function to create ESP for a player with color based on role
+local function createESP(player)
+    local espBox = Instance.new("BoxHandleAdornment")
+    espBox.Size = Vector3.new(2, 5, 2) -- Adjust size as necessary
+    espBox.Transparency = 0.5 -- Make it semi-transparent
+    espBox.AlwaysOnTop = true
+    espBox.Parent = player.Character:WaitForChild("HumanoidRootPart") -- Attach to the player's character
 
-    if player then
-        -- Proceed with updating the leaderboard using player data
-        print("Updating leaderboard for " .. playerName)
+    -- Determine color based on role
+    if player:FindFirstChild("PlayerData") and player.PlayerData:FindFirstChild("Role") then
+        local role = player.PlayerData.Role.Value -- Get the player's role
+
+        if role == "Murderer" then
+            espBox.Color3 = Color3.new(1, 0, 0) -- Red for Murderer
+        elseif role == "Sheriff" then
+            espBox.Color3 = Color3.new(0, 0, 1) -- Blue for Sheriff
+        elseif role == "Innocent" then
+            espBox.Color3 = Color3.new(0, 1, 0) -- Green for Innocent
+        else
+            espBox.Color3 = Color3.new(1, 1, 1) -- Default color (white) for others
+        end
     else
-        print("Player " .. playerName .. " not found.")
-    end
-end
-
--- Call the function to update the leaderboard
-UpdateLeaderboard()
-
--- Add pcall to catch potential errors
-local success, err = pcall(function()
-    -- Your code that may throw errors goes here
-end)
-
-if not success then
-    print("Error occurred: " .. err)
-end
+        espBox.Color3 = Color3.new(
