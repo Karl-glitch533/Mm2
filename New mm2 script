@@ -3,7 +3,6 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
 
 -- Create ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
@@ -99,15 +98,14 @@ espButton.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
     if espEnabled then
         for _, player in pairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer then
+            if player ~= LocalPlayer and player.Character then
                 local espBox = Instance.new("BoxHandleAdornment")
                 espBox.Size = Vector3.new(2, 5, 2)
                 espBox.AlwaysOnTop = true
                 espBox.ZIndex = 5
-
                 espBox.Parent = player.Character:WaitForChild("HumanoidRootPart")
-                espBoxes[player.UserId] = espBox
 
+                -- Set color based on team
                 if player.Team.Name == "Murderer" then
                     espBox.Color3 = Color3.fromRGB(255, 0, 0) -- Murderer color
                 elseif player.Team.Name == "Sheriff" then
@@ -115,6 +113,7 @@ espButton.MouseButton1Click:Connect(function()
                 elseif player.Team.Name == "Innocents" then
                     espBox.Color3 = Color3.fromRGB(0, 255, 0) -- Innocent color
                 end
+                espBoxes[player.UserId] = espBox
             end
         end
     else
@@ -132,30 +131,22 @@ local autoShootEnabled = false
 shootMurderButton.MouseButton1Click:Connect(function()
     autoShootEnabled = not autoShootEnabled
     if autoShootEnabled then
-        local autoShootButton = Instance.new("TextButton")
-        autoShootButton.Size = UDim2.new(0, 100, 0, 30)
-        autoShootButton.Position = UDim2.new(1, -110, 0.5, -15)
-        autoShootButton.Text = "Auto Shoot"
-        autoShootButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-        autoShootButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        autoShootButton.Font = Enum.Font.Gotham
-        autoShootButton.TextSize = 14
-        autoShootButton.Parent = MainFrame
-
-        autoShootButton.MouseButton1Click:Connect(function()
+        local remote = ReplicatedStorage:FindFirstChild("ShootRemote")
+        if not remote then
+            warn("ShootRemote not found in ReplicatedStorage.")
             autoShootEnabled = false
-            autoShootButton:Destroy() -- Remove auto shoot button when clicked
-        end)
+            return
+        end
 
-        -- Auto shooting logic
+        -- Start auto shooting
         while autoShootEnabled do
             wait(0.5)  -- Adjust as needed
             local gun = LocalPlayer.Backpack:FindFirstChild("Gun") or LocalPlayer.Character:FindFirstChild("Gun")
-            if gun then
-                local remote = ReplicatedStorage:FindFirstChild("ShootRemote") -- Make sure to adjust this
-                if remote then
-                    remote:FireServer() -- Fires the gun
-                end
+            if gun and remote then
+                remote:FireServer() -- Fires the gun
+                print("Shooting...")
+            else
+                print("No gun found in backpack or character.")
             end
         end
     end
